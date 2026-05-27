@@ -6,12 +6,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden bg-[#050505]">
-      {/* Background Orbs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-600/20 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-600/20 blur-[120px] pointer-events-none" />
-      <div className="absolute top-[40%] left-[50%] translate-x-[-50%] w-[30%] h-[30%] rounded-full bg-primary/10 blur-[100px] pointer-events-none" />
-
+    <div className="min-h-screen flex flex-col relative overflow-hidden">
       <nav className="p-6 flex justify-between items-center max-w-7xl mx-auto w-full relative z-10">
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
