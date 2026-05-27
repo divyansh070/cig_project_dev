@@ -23,6 +23,7 @@ if not os.path.exists(UPLOAD_DIR):
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 AWS_BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME", "photography-platform-bucket")
+AWS_REGION = os.environ.get("AWS_REGION", "eu-north-1")
 S3_ENABLED = bool(AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)
 
 s3_client = None
@@ -30,7 +31,8 @@ if S3_ENABLED:
     s3_client = boto3.client(
         "s3",
         aws_access_key_id=AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=AWS_SECRET_ACCESS_KEY
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        region_name=AWS_REGION
     )
 
 async def trigger_ai_tagging(media_id: int, user_id: int):
