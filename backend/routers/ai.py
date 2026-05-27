@@ -10,9 +10,9 @@ from database import get_db
 # Try loading HuggingFace transformers pipeline
 try:
     from transformers import pipeline
-    print("Loading HuggingFace zero-shot image classification model...")
-    # Using a lightweight CLIP model
-    image_classifier = pipeline("zero-shot-image-classification", model="openai/clip-vit-base-patch32")
+    print("Loading lightweight HuggingFace MobileNetV2 model...")
+    # Using an extremely lightweight 14MB model (MobileNetV2) for M1/Low-compute devices
+    image_classifier = pipeline("image-classification", model="google/mobilenet_v2_1.0_224")
     AI_ENABLED = True
 except Exception as e:
     print(f"Failed to load transformers AI model: {e}")
@@ -20,12 +20,6 @@ except Exception as e:
     AI_ENABLED = False
 
 router = APIRouter(prefix="/ai", tags=["ai"])
-
-CANDIDATE_LABELS = [
-    "portrait", "group of people", "mountain", "beach", "sports", 
-    "indoor event", "night", "nature", "city", "wedding", "concert",
-    "food", "pet", "architecture", "vehicle"
-]
 
 @router.post("/tag/{media_id}")
 async def generate_tags(
@@ -46,12 +40,15 @@ async def generate_tags(
             file_path = os.path.join("uploads", filename)
             
             if os.path.exists(file_path):
-                # Run inference
-                results = image_classifier(file_path, candidate_labels=CANDIDATE_LABELS)
+                # Run inference using MobileNetV2
+                results = image_classifier(file_path)
                 
                 # Extract top 3 labels with score > 0.1
                 top_results = sorted(results, key=lambda x: x['score'], reverse=True)
-                tags = [res['label'] for res in top_results if res['score'] > 0.1][:3]
+                
+                # MobileNet returns labels like "golden retriever", "mountain bike, all-terrain bike, off-roader"
+                # We can grab the first part of the label for cleaner tags
+                tags = [res['label'].split(',')[0].strip() for res in top_results if res['score'] > 0.05][:3]
         except Exception as e:
             print(f"AI tagging error: {e}")
 
