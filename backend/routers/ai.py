@@ -73,9 +73,36 @@ async def search_faces(
         except Exception:
             pass
             
-    # Mock fallback: return random media as matches to demonstrate the UI workflow
-    all_media = db.query(models.Media).limit(10).all()
-    if all_media:
-        matched_media = random.sample(all_media, k=min(3, len(all_media)))
-        
+    # Local fallback: actual facial recognition using face_recognition library
+    if not matched_media:
+        try:
+            import face_recognition
+            import io
+            
+            reference_image = face_recognition.load_image_file(io.BytesIO(content))
+            reference_encodings = face_recognition.face_encodings(reference_image)
+            
+            if reference_encodings:
+                reference_encoding = reference_encodings[0]
+                all_media = db.query(models.Media).all()
+                
+                for m in all_media:
+                    filename = m.url.split('/')[-1]
+                    file_path = os.path.join("uploads", filename)
+                    
+                    if os.path.exists(file_path):
+                        try:
+                            unknown_image = face_recognition.load_image_file(file_path)
+                            unknown_encodings = face_recognition.face_encodings(unknown_image)
+                            
+                            for unknown_encoding in unknown_encodings:
+                                results = face_recognition.compare_faces([reference_encoding], unknown_encoding, tolerance=0.55)
+                                if results[0]:
+                                    matched_media.append(m)
+                                    break # Match found, stop checking other faces in this image
+                        except Exception as img_err:
+                            print(f"Error processing {filename}: {img_err}")
+        except Exception as e:
+            print(f"Facial recognition error: {e}")
+            
     return {"matched_media": [{"id": m.id, "url": m.url, "filename": m.filename, "upload_date": m.upload_date} for m in matched_media]}
