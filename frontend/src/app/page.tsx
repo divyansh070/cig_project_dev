@@ -1,64 +1,111 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Camera, Image as ImageIcon, Users, Shield } from "lucide-react";
+import { Camera, Image as ImageIcon, Users, Shield, Sparkles, ArrowRight, Aperture } from "lucide-react";
 import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <nav className="p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
-        <div className="flex items-center gap-2">
-          <Camera className="w-8 h-8 text-primary" />
-          <span className="text-xl font-bold tracking-tight">CaptureHub</span>
-        </div>
-        <div className="flex gap-4">
-          <Link href="/login" className="px-5 py-2 rounded-full hover:bg-white/10 transition-colors font-medium">
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-[#050505]">
+      {/* Background Orbs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-600/20 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-purple-600/20 blur-[120px] pointer-events-none" />
+      <div className="absolute top-[40%] left-[50%] translate-x-[-50%] w-[30%] h-[30%] rounded-full bg-primary/10 blur-[100px] pointer-events-none" />
+
+      <nav className="p-6 flex justify-between items-center max-w-7xl mx-auto w-full relative z-10">
+        <motion.div 
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-3"
+        >
+          <div className="bg-gradient-to-tr from-primary to-blue-400 p-2 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+            <Camera className="w-6 h-6 text-white" />
+          </div>
+          <span className="text-2xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
+            CaptureHub
+          </span>
+        </motion.div>
+        
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex items-center gap-6"
+        >
+          <Link href="/login" className="text-sm font-medium text-white/70 hover:text-white transition-colors">
             Log In
           </Link>
-          <Link href="/register" className="px-5 py-2 bg-primary hover:bg-primary-hover rounded-full transition-colors font-medium text-white">
-            Get Started
+          <Link href="/register" className="group relative px-6 py-2.5 rounded-full overflow-hidden">
+            <div className="absolute inset-0 bg-primary hover:bg-primary-hover transition-colors" />
+            <div className="relative flex items-center gap-2 text-sm font-semibold text-white">
+              Get Started
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </div>
           </Link>
-        </div>
+        </motion.div>
       </nav>
 
-      <main className="flex-grow flex flex-col items-center justify-center p-6 text-center">
+      <main className="flex-grow flex flex-col items-center justify-center p-6 text-center relative z-10 mt-10 md:mt-0">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="max-w-3xl"
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="max-w-4xl w-full flex flex-col items-center"
         >
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6 bg-gradient-to-br from-white to-white/50 bg-clip-text text-transparent leading-tight">
-            The Ultimate Platform for Event Photography
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 mb-8 backdrop-blur-md">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium text-white/80">The new standard for event photography</span>
+          </div>
+          
+          <h1 className="text-6xl md:text-8xl font-black tracking-tight mb-8 leading-[1.1]">
+            Curate your moments with <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-400 to-purple-500">Intelligent</span> vision.
           </h1>
-          <p className="text-xl text-muted mb-10 max-w-2xl mx-auto leading-relaxed">
-            Manage your event media with AI-powered tagging, seamless sharing, and enterprise-grade security. Built for organizers and photographers.
+          
+          <p className="text-xl md:text-2xl text-muted mb-12 max-w-2xl mx-auto leading-relaxed font-light">
+            An exclusive platform for modern photography clubs. Featuring AI-powered facial recognition, dynamic watermarks, and granular privacy controls.
           </p>
-          <div className="flex gap-4 justify-center">
-            <Link href="/register" className="px-8 py-4 bg-primary hover:bg-primary-hover text-white rounded-full font-semibold text-lg transition-all shadow-[0_0_40px_rgba(59,130,246,0.3)] hover:shadow-[0_0_60px_rgba(59,130,246,0.5)]">
-              Start Organizing Free
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link href="/register" className="px-8 py-4 bg-primary text-white rounded-full font-semibold text-lg transition-all shadow-[0_0_30px_rgba(59,130,246,0.3)] hover:shadow-[0_0_50px_rgba(59,130,246,0.5)] hover:-translate-y-1 flex items-center gap-2 w-full sm:w-auto justify-center">
+              Create an Account
+            </Link>
+            <Link href="/login" className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-full font-semibold text-lg transition-all hover:-translate-y-1 flex items-center gap-2 w-full sm:w-auto justify-center">
+              Member Sign In
             </Link>
           </div>
         </motion.div>
 
         <motion.div 
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl w-full mt-24"
+          transition={{ duration: 0.8, delay: 0.3 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full mt-32 mb-12"
         >
           {[
-            { icon: ImageIcon, title: "Smart Organization", desc: "Event-wise albums with AI-powered tagging and search." },
-            { icon: Users, title: "Social Experience", desc: "Like, comment, share and connect with other members." },
-            { icon: Shield, title: "Access Control", desc: "Granular permissions, private albums, and dynamic watermarks." }
+            { 
+              icon: Aperture, 
+              title: "Contextual Roles", 
+              desc: "Granular, event-specific roles. Be an Admin for one shoot and a Viewer for another." 
+            },
+            { 
+              icon: Users, 
+              title: "Social Ecosystem", 
+              desc: "Foster community with built-in discussions, likes, and seamless sharing capabilities." 
+            },
+            { 
+              icon: Shield, 
+              title: "Enterprise Privacy", 
+              desc: "Military-grade access controls ensuring private events remain completely invisible to the public." 
+            }
           ].map((feature, i) => (
-            <div key={i} className="glass-panel p-6 rounded-2xl text-left hover:bg-white/[0.02] transition-colors">
-              <div className="bg-white/5 w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                <feature.icon className="w-6 h-6 text-primary" />
+            <div key={i} className="group relative glass-panel p-8 rounded-3xl text-left border border-white/5 hover:border-primary/30 transition-all duration-500 overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative z-10">
+                <div className="bg-white/5 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-500">
+                  <feature.icon className="w-7 h-7 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3">{feature.title}</h3>
+                <p className="text-muted leading-relaxed text-lg">{feature.desc}</p>
               </div>
-              <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-              <p className="text-muted leading-relaxed">{feature.desc}</p>
             </div>
           ))}
         </motion.div>

@@ -119,7 +119,7 @@ export default function DashboardPage() {
           <button 
             onClick={() => {
               localStorage.removeItem("token");
-              router.push("/login");
+              router.push("/");
             }}
             className="bg-red-500/10 hover:bg-red-500/20 text-red-400 px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg border border-red-500/10"
           >
