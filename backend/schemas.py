@@ -49,3 +49,11 @@ class Event(EventBase):
 
     class Config:
         from_attributes = True
+
+class EventMember(BaseModel):
+    username: str
+    is_club_member: bool
+    role: str
+
+    class Config:
+        from_attributes = True

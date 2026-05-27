@@ -33,6 +33,8 @@ export default function EventGalleryPage() {
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [comments, setComments] = useState<any[]>([]);
   const [likesCount, setLikesCount] = useState(0);
+  const [showTeamModal, setShowTeamModal] = useState(false);
+  const [members, setMembers] = useState<{username: string, is_club_member: boolean, role: string}[]>([]);
 
   const eventId = params.id;
   const [searchQuery, setSearchQuery] = useState("");
@@ -68,6 +70,15 @@ export default function EventGalleryPage() {
       setLikesCount(likesRes.data.likes_count);
     } catch (err) {
       console.error("Failed to load social details", err);
+    }
+  };
+
+  const fetchMembers = async () => {
+    try {
+      const res = await api.get(`/events/${eventId}/members`);
+      setMembers(res.data);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -123,20 +134,13 @@ export default function EventGalleryPage() {
         <div className="flex gap-3">
           {eventRole === "Admin" && (
             <button 
-              onClick={async () => {
-                const username = prompt("Enter username to assign as Photographer:");
-                if (username) {
-                  try {
-                    await api.post(`/events/${eventId}/roles?username=${username}&role=Photographer`);
-                    alert(`Successfully assigned Photographer role to ${username}!`);
-                  } catch (e) {
-                    alert("Failed to assign role. Check username.");
-                  }
-                }
+              onClick={() => {
+                fetchMembers();
+                setShowTeamModal(true);
               }}
               className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-all shadow-sm border border-blue-200"
             >
-              Assign Role
+              Manage Team
             </button>
           )}
           <button 
@@ -336,6 +340,62 @@ export default function EventGalleryPage() {
                   </button>
                 </div>
               </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Team Management Modal */}
+      {showTeamModal && (
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="glass-panel rounded-2xl w-full max-w-lg p-6 bg-white shadow-2xl border border-gray-200"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-bold text-xl text-gray-900">Manage Team</h3>
+              <button onClick={() => setShowTeamModal(false)} className="text-gray-400 hover:text-gray-900 font-medium transition-colors">&times; Close</button>
+            </div>
+            
+            <div className="max-h-[60vh] overflow-y-auto space-y-3 pr-2">
+              {members.map(m => (
+                <div key={m.username} className="flex justify-between items-center p-3 border border-gray-100 rounded-xl bg-gray-50">
+                  <div>
+                    <p className="font-medium text-gray-900">{m.username}</p>
+                    <p className="text-xs text-gray-500">
+                      {m.is_club_member ? "Club Member" : "Standard User"} &middot; <span className="font-medium text-primary">{m.role}</span>
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    {m.role !== "Admin" && m.role !== "Photographer" && (
+                      <button 
+                        onClick={async () => {
+                          await api.post(`/events/${eventId}/roles?username=${m.username}&role=Photographer`);
+                          fetchMembers();
+                        }}
+                        className="text-xs bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-lg font-medium transition-colors"
+                      >
+                        Make Photographer
+                      </button>
+                    )}
+                    {(m.role === "Photographer") && (
+                      <button 
+                        onClick={async () => {
+                          await api.delete(`/events/${eventId}/roles/${m.username}`);
+                          fetchMembers();
+                        }}
+                        className="text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg font-medium transition-colors"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {members.length === 0 && (
+                 <p className="text-gray-500 text-sm text-center py-4">No members available.</p>
+              )}
             </div>
           </motion.div>
         </div>

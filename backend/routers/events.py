@@ -147,3 +147,72 @@ def get_user_role(
         return {"role": user_role.role.value}
         
     return {"role": "Viewer"}
+
+@router.get("/{event_id}/members", response_model=List[schemas.EventMember])
+def get_event_members(
+    event_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+        
+    # We want to return club members AND anyone who has a role in the event.
+    users = db.query(models.User).filter(
+        (models.User.is_club_member == True) | 
+        (models.User.event_roles.any(event_id=event_id))
+    ).all()
+    
+    members = []
+    for u in users:
+        role = "Viewer"
+        if event.creator_id == u.id:
+            role = "Admin"
+        else:
+            ur = db.query(models.EventRole).filter(models.EventRole.event_id == event_id, models.EventRole.user_id == u.id).first()
+            if ur:
+                role = ur.role.value
+        
+        members.append({
+            "username": u.username,
+            "is_club_member": u.is_club_member,
+            "role": role
+        })
+        
+    return members
+
+@router.delete("/{event_id}/roles/{username}")
+def remove_role(
+    event_id: int,
+    username: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+        
+    current_user_role = db.query(models.EventRole).filter(
+        models.EventRole.event_id == event_id,
+        models.EventRole.user_id == current_user.id
+    ).first()
+    
+    if not current_user_role or current_user_role.role != models.EventRoleEnum.admin:
+        if event.creator_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Only Event Admins can remove roles.")
+            
+    target_user = db.query(models.User).filter(models.User.username == username).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Target user not found")
+        
+    existing_role = db.query(models.EventRole).filter(
+        models.EventRole.event_id == event_id,
+        models.EventRole.user_id == target_user.id
+    ).first()
+    
+    if existing_role:
+        db.delete(existing_role)
+        db.commit()
+        
+    return {"message": f"Successfully removed role for {username}"}
