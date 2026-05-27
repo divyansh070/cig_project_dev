@@ -102,6 +102,15 @@ export default function DashboardPage() {
             <Search className="w-5 h-5" />
             Find Myself
           </Link>
+          <button 
+            onClick={() => {
+              localStorage.removeItem("token");
+              router.push("/login");
+            }}
+            className="bg-red-500/10 hover:bg-red-500/20 text-red-400 px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg border border-red-500/10"
+          >
+            Logout
+          </button>
         </div>
       </div>
 
