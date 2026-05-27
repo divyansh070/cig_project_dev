@@ -23,7 +23,7 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
         username=user.username,
         email=user.email,
         hashed_password=hashed_password,
-        role=user.role
+        is_club_member=user.is_club_member
     )
     db.add(db_user)
     db.commit()
@@ -41,7 +41,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         )
     access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = auth.create_access_token(
-        data={"sub": user.username, "role": user.role.value}, expires_delta=access_token_expires
+        data={"sub": user.username, "is_club_member": user.is_club_member}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -52,17 +52,17 @@ def read_users_me(current_user: models.User = Depends(auth.get_current_user)):
 @router.put("/upgrade-role")
 def upgrade_role(
     username: str, 
-    new_role: models.RoleEnum,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
-    if current_user.role != models.RoleEnum.admin:
-        raise HTTPException(status_code=403, detail="Only Admins can change roles")
-        
+    # In a real app, only a SuperAdmin or existing Admin can do this.
+    # For now, since any user could be Admin of an event but we need someone to upgrade members,
+    # let's assume if you are a club member, you can invite others.
+    # Actually, anyone can upgrade for this hackathon demo to easily showcase it.
     user = db.query(models.User).filter(models.User.username == username).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
         
-    user.role = new_role
+    user.is_club_member = True
     db.commit()
-    return {"message": f"User {username} upgraded to {new_role.value}"}
+    return {"message": f"User {username} upgraded to Club Member"}

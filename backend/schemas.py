@@ -1,12 +1,11 @@
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
-from models import RoleEnum
 
 class UserBase(BaseModel):
     username: str
     email: str
-    role: RoleEnum = RoleEnum.viewer
+    is_club_member: bool = False
 
 class UserCreate(UserBase):
     password: str

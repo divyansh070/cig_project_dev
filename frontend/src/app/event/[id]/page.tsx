@@ -28,7 +28,8 @@ export default function EventGalleryPage() {
   const [media, setMedia] = useState<Media[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [userRole, setUserRole] = useState("Viewer");
+  const [isClubMember, setIsClubMember] = useState(false);
+  const [eventRole, setEventRole] = useState("Viewer");
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [comments, setComments] = useState<any[]>([]);
   const [likesCount, setLikesCount] = useState(0);
@@ -38,12 +39,14 @@ export default function EventGalleryPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [userRes, eventRes, mediaRes] = await Promise.all([
-        api.get("/auth/me").catch(() => ({ data: { role: "Viewer" } })),
+      const [userRes, roleRes, eventRes, mediaRes] = await Promise.all([
+        api.get("/auth/me").catch(() => ({ data: { is_club_member: false } })),
+        api.get(`/events/${eventId}/role`).catch(() => ({ data: { role: "Viewer" } })),
         api.get(`/events/${eventId}`),
         api.get(`/media/event/${eventId}`)
       ]);
-      setUserRole(userRes.data.role);
+      setIsClubMember(userRes.data.is_club_member);
+      setEventRole(roleRes.data.role);
       setEvent(eventRes.data);
       setMedia(mediaRes.data);
     } catch (err) {
@@ -112,21 +115,44 @@ export default function EventGalleryPage() {
       <div className="mb-10 flex justify-between items-start">
         <div>
           <h1 className="text-4xl font-bold mb-2">{event?.name}</h1>
-          <p className="text-muted text-lg">{event?.description}</p>
+          <p className="text-muted text-lg mb-2">{event?.description}</p>
+          <div className="flex gap-2">
+            <span className="text-xs bg-white/10 px-3 py-1 rounded-full text-white/70">Your role: {eventRole}</span>
+          </div>
         </div>
-        <button 
-          onClick={() => {
-            navigator.clipboard.writeText(window.location.href);
-            alert("Event link copied to clipboard!");
-          }}
-          className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg border border-white/5"
-        >
-          <Share2 className="w-4 h-4" />
-          Share Event
-        </button>
+        <div className="flex gap-3">
+          {eventRole === "Admin" && (
+            <button 
+              onClick={async () => {
+                const username = prompt("Enter username to assign as Photographer:");
+                if (username) {
+                  try {
+                    await api.post(`/events/${eventId}/roles?username=${username}&role=Photographer`);
+                    alert(`Successfully assigned Photographer role to ${username}!`);
+                  } catch (e) {
+                    alert("Failed to assign role. Check username.");
+                  }
+                }
+              }}
+              className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg border border-blue-500/20"
+            >
+              Assign Role
+            </button>
+          )}
+          <button 
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              alert("Event link copied to clipboard!");
+            }}
+            className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg border border-white/5"
+          >
+            <Share2 className="w-4 h-4" />
+            Share Event
+          </button>
+        </div>
       </div>
 
-      {(userRole === "Admin" || userRole === "Photographer" || userRole === "Club Member") && (
+      {(eventRole === "Admin" || eventRole === "Photographer") && (
         <div 
           {...getRootProps()} 
           className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-300 mb-10 flex flex-col items-center justify-center

@@ -4,10 +4,9 @@ import enum
 import datetime
 from database import Base
 
-class RoleEnum(str, enum.Enum):
+class EventRoleEnum(str, enum.Enum):
     admin = "Admin"
     photographer = "Photographer"
-    member = "Club Member"
     viewer = "Viewer"
 
 class User(Base):
@@ -17,10 +16,22 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
-    role = Column(Enum(RoleEnum), default=RoleEnum.viewer)
+    is_club_member = Column(Boolean, default=False)
     
     events = relationship("Event", back_populates="creator")
     media = relationship("Media", back_populates="uploader")
+    event_roles = relationship("EventRole", back_populates="user")
+
+class EventRole(Base):
+    __tablename__ = "event_roles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    event_id = Column(Integer, ForeignKey("events.id"))
+    role = Column(Enum(EventRoleEnum), default=EventRoleEnum.viewer)
+    
+    user = relationship("User", back_populates="event_roles")
+    event = relationship("Event", back_populates="roles")
 
 class Event(Base):
     __tablename__ = "events"
@@ -35,6 +46,7 @@ class Event(Base):
     
     creator = relationship("User", back_populates="events")
     media = relationship("Media", back_populates="event")
+    roles = relationship("EventRole", back_populates="event")
 
 class Media(Base):
     __tablename__ = "media"

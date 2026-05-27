@@ -20,7 +20,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState("Viewer");
+  const [isClubMember, setIsClubMember] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   
   // Create Event Form State
@@ -40,7 +40,7 @@ export default function DashboardPage() {
         api.get("/auth/me"),
         api.get("/events/")
       ]);
-      setUserRole(userRes.data.role);
+      setIsClubMember(userRes.data.is_club_member);
       setEvents(eventsRes.data);
     } catch (err) {
       console.error(err);
@@ -82,37 +82,33 @@ export default function DashboardPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold mb-2">Events Dashboard</h1>
-          <p className="text-muted">Welcome back! You are viewing as a <span className="text-primary font-medium">{userRole}</span>.</p>
+          <p className="text-muted">Welcome back! You are viewing as a <span className="text-primary font-medium">{isClubMember ? "Club Member" : "Standard User"}</span>.</p>
         </div>
         
         <div className="flex gap-4">
-          {userRole === "Admin" && (
-            <button 
-              onClick={async () => {
-                const username = prompt("Enter the username to promote to Club Member:");
-                if (username) {
-                  try {
-                    await api.put(`/auth/upgrade-role?username=${username}&new_role=Club Member`);
-                    alert(`Successfully promoted ${username} to Club Member!`);
-                  } catch (e) {
-                    alert("Failed to promote user. Check username.");
-                  }
+          <button 
+            onClick={async () => {
+              const username = prompt("Enter the username to promote to Club Member:");
+              if (username) {
+                try {
+                  await api.put(`/auth/upgrade-role?username=${username}`);
+                  alert(`Successfully promoted ${username} to Club Member!`);
+                } catch (e) {
+                  alert("Failed to promote user. Check username.");
                 }
-              }}
-              className="bg-green-500/20 hover:bg-green-500/30 text-green-400 px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg border border-green-500/20"
-            >
-              Add Member
-            </button>
-          )}
-          {(userRole === "Admin" || userRole === "Photographer") && (
-            <button 
-              onClick={() => setShowCreateModal(true)}
-              className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-primary/20"
-            >
-              <Plus className="w-5 h-5" />
-              Create Event
-            </button>
-          )}
+              }
+            }}
+            className="bg-green-500/20 hover:bg-green-500/30 text-green-400 px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg border border-green-500/20"
+          >
+            Add Member
+          </button>
+          <button 
+            onClick={() => setShowCreateModal(true)}
+            className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-primary/20"
+          >
+            <Plus className="w-5 h-5" />
+            Create Event
+          </button>
           <Link 
             href="/face-search"
             className="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg border border-white/5"
@@ -188,7 +184,7 @@ export default function DashboardPage() {
           <div className="col-span-full py-20 text-center border-2 border-dashed border-white/10 rounded-2xl">
             <Calendar className="w-12 h-12 text-muted mx-auto mb-4 opacity-50" />
             <h3 className="text-xl font-medium mb-2">No events found</h3>
-            <p className="text-muted">{(userRole === "Admin" || userRole === "Photographer") ? "Create your first event to get started." : "Check back later for new events."}</p>
+            <p className="text-muted">Create your first event to get started.</p>
           </div>
         )}
       </div>

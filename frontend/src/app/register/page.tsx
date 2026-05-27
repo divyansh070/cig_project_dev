@@ -11,7 +11,6 @@ export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("Viewer");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +24,7 @@ export default function RegisterPage() {
         username,
         email,
         password,
-        role
+        is_club_member: false
       });
       // After successful registration, redirect to login
       router.push("/login?registered=true");
@@ -89,20 +88,6 @@ export default function RegisterPage() {
               required
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium mb-1 text-muted">Role</label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-white transition-all appearance-none"
-            >
-              <option value="Viewer">Viewer</option>
-              <option value="Club Member">Club Member</option>
-              <option value="Photographer">Photographer</option>
-              <option value="Admin">Admin</option>
-            </select>
-          </div>
-          
           <button
             type="submit"
             disabled={loading}

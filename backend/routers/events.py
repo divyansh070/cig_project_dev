@@ -13,10 +13,6 @@ def create_event(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
-    # Only Admin or Photographer can create events (Role-based access control example)
-    if current_user.role not in [models.RoleEnum.admin, models.RoleEnum.photographer]:
-        raise HTTPException(status_code=403, detail="Not enough permissions to create events")
-        
     db_event = models.Event(
         **event.model_dump(),
         creator_id=current_user.id
@@ -24,6 +20,16 @@ def create_event(
     db.add(db_event)
     db.commit()
     db.refresh(db_event)
+    
+    # Give the creator Admin rights for this specific event
+    event_role = models.EventRole(
+        user_id=current_user.id,
+        event_id=db_event.id,
+        role=models.EventRoleEnum.admin
+    )
+    db.add(event_role)
+    db.commit()
+    
     return db_event
 
 @router.get("/", response_model=List[schemas.Event])
@@ -33,20 +39,27 @@ def read_events(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
-    query = db.query(models.Event)
+    # Get all events
+    all_events = db.query(models.Event).offset(skip).limit(limit).all()
     
-    if current_user.role in [models.RoleEnum.admin, models.RoleEnum.club_member]:
-        # Admins and Club Members can see all events (including private)
-        pass
-    elif current_user.role == models.RoleEnum.photographer:
-        # Photographers can see public events OR events they created
-        query = query.filter((models.Event.is_public == True) | (models.Event.creator_id == current_user.id))
-    else:
-        # Viewers can only see public events
-        query = query.filter(models.Event.is_public == True)
-        
-    events = query.offset(skip).limit(limit).all()
-    return events
+    # Filter based on contextual permissions
+    visible_events = []
+    for ev in all_events:
+        if ev.is_public:
+            visible_events.append(ev)
+        elif current_user.is_club_member:
+            # Club members see all private events
+            visible_events.append(ev)
+        else:
+            # Check if this specific user has ANY role in this event
+            user_role = db.query(models.EventRole).filter(
+                models.EventRole.event_id == ev.id,
+                models.EventRole.user_id == current_user.id
+            ).first()
+            if user_role or ev.creator_id == current_user.id:
+                visible_events.append(ev)
+                
+    return visible_events
 
 @router.get("/{event_id}", response_model=schemas.Event)
 def read_event(
@@ -59,7 +72,78 @@ def read_event(
         raise HTTPException(status_code=404, detail="Event not found")
         
     if not event.is_public:
-        if current_user.role not in [models.RoleEnum.admin, models.RoleEnum.club_member] and event.creator_id != current_user.id:
-            raise HTTPException(status_code=403, detail="You do not have permission to view this private event.")
+        if not current_user.is_club_member and event.creator_id != current_user.id:
+            user_role = db.query(models.EventRole).filter(
+                models.EventRole.event_id == event.id,
+                models.EventRole.user_id == current_user.id
+            ).first()
+            if not user_role:
+                raise HTTPException(status_code=403, detail="You do not have permission to view this private event.")
         
     return event
+
+@router.post("/{event_id}/roles")
+def assign_role(
+    event_id: int,
+    username: str,
+    role: models.EventRoleEnum,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+        
+    # Check if current user is admin of THIS event
+    current_user_role = db.query(models.EventRole).filter(
+        models.EventRole.event_id == event_id,
+        models.EventRole.user_id == current_user.id
+    ).first()
+    
+    if not current_user_role or current_user_role.role != models.EventRoleEnum.admin:
+        if event.creator_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Only Event Admins can assign roles.")
+            
+    target_user = db.query(models.User).filter(models.User.username == username).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Target user not found")
+        
+    # Assign or update role
+    existing_role = db.query(models.EventRole).filter(
+        models.EventRole.event_id == event_id,
+        models.EventRole.user_id == target_user.id
+    ).first()
+    
+    if existing_role:
+        existing_role.role = role
+    else:
+        new_role = models.EventRole(
+            user_id=target_user.id,
+            event_id=event_id,
+            role=role
+        )
+        db.add(new_role)
+        
+    db.commit()
+    return {"message": f"Successfully assigned {role.value} to {username}"}
+
+@router.get("/{event_id}/role")
+def get_user_role(
+    event_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    # Check if they are the creator
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if event and event.creator_id == current_user.id:
+        return {"role": "Admin"}
+        
+    user_role = db.query(models.EventRole).filter(
+        models.EventRole.event_id == event_id,
+        models.EventRole.user_id == current_user.id
+    ).first()
+    
+    if user_role:
+        return {"role": user_role.role.value}
+        
+    return {"role": "Viewer"}
