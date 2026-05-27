@@ -14,6 +14,7 @@ interface Event {
   date: string;
   category: string;
   is_public: boolean;
+  media: { id: number; url: string; filename: string }[];
 }
 
 export default function DashboardPage() {
@@ -161,6 +162,25 @@ export default function DashboardPage() {
               </div>
               <h3 className="text-xl font-bold mb-2 text-gray-900">{event.name}</h3>
               <p className="text-gray-500 text-sm mb-4 line-clamp-2">{event.description || "No description provided."}</p>
+              
+              {event.media && event.media.length > 0 && (
+                <div className="flex gap-2 mb-4">
+                  {event.media.slice(0, 3).map((m) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img 
+                      key={m.id} 
+                      src={`http://localhost:8000/media/view/${m.url.split('/').pop()}`} 
+                      alt={m.filename} 
+                      className="w-12 h-12 rounded-lg object-cover border border-gray-200 shadow-sm"
+                    />
+                  ))}
+                  {event.media.length > 3 && (
+                    <div className="w-12 h-12 rounded-lg bg-gray-50 flex items-center justify-center text-xs font-medium text-gray-500 border border-gray-200 shadow-sm">
+                      +{event.media.length - 3}
+                    </div>
+                  )}
+                </div>
+              )}
               
               <div className="flex items-center gap-4 text-xs font-medium text-gray-500">
                 <div className="flex items-center gap-1">

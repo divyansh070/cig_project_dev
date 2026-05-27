@@ -25,14 +25,6 @@ class EventBase(BaseModel):
 class EventCreate(EventBase):
     pass
 
-class Event(EventBase):
-    id: int
-    date: datetime
-    creator_id: int
-
-    class Config:
-        from_attributes = True
-
 class MediaBase(BaseModel):
     filename: str
     url: str
@@ -45,6 +37,15 @@ class Media(MediaBase):
     upload_date: datetime
     event_id: int
     uploader_id: int
+
+    class Config:
+        from_attributes = True
+
+class Event(EventBase):
+    id: int
+    date: datetime
+    creator_id: int
+    media: List[Media] = []
 
     class Config:
         from_attributes = True
