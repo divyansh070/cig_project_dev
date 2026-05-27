@@ -1,27 +1,31 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 import os
-import boto3
-from botocore.exceptions import NoCredentialsError
 import random
+import json
 
 import models, auth
 from database import get_db
 
+# Try loading HuggingFace transformers pipeline
+try:
+    from transformers import pipeline
+    print("Loading HuggingFace zero-shot image classification model...")
+    # Using a lightweight CLIP model
+    image_classifier = pipeline("zero-shot-image-classification", model="openai/clip-vit-base-patch32")
+    AI_ENABLED = True
+except Exception as e:
+    print(f"Failed to load transformers AI model: {e}")
+    image_classifier = None
+    AI_ENABLED = False
+
 router = APIRouter(prefix="/ai", tags=["ai"])
 
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-AI_ENABLED = bool(AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)
-
-rekognition = None
-if AI_ENABLED:
-    rekognition = boto3.client(
-        'rekognition',
-        region_name='us-east-1',
-        aws_access_key_id=AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=AWS_SECRET_ACCESS_KEY
-    )
+CANDIDATE_LABELS = [
+    "portrait", "group of people", "mountain", "beach", "sports", 
+    "indoor event", "night", "nature", "city", "wedding", "concert",
+    "food", "pet", "architecture", "vehicle"
+]
 
 @router.post("/tag/{media_id}")
 async def generate_tags(
@@ -35,20 +39,29 @@ async def generate_tags(
 
     tags = []
     
-    if AI_ENABLED:
+    # Run the actual local AI model
+    if AI_ENABLED and image_classifier:
         try:
-            # We would normally fetch the image bytes here from S3 or local disk
-            # For demonstration, assuming we have image bytes:
-            # response = rekognition.detect_labels(Image={'Bytes': image_bytes}, MaxLabels=5)
-            # tags = [label['Name'] for label in response['Labels']]
-            pass
-        except Exception:
-            pass
+            filename = media.url.split('/')[-1]
+            file_path = os.path.join("uploads", filename)
+            
+            if os.path.exists(file_path):
+                # Run inference
+                results = image_classifier(file_path, candidate_labels=CANDIDATE_LABELS)
+                
+                # Extract top 3 labels with score > 0.1
+                top_results = sorted(results, key=lambda x: x['score'], reverse=True)
+                tags = [res['label'] for res in top_results if res['score'] > 0.1][:3]
+        except Exception as e:
+            print(f"AI tagging error: {e}")
 
-    # Fallback / Mock logic if AWS is not configured or fails
+    # Fallback / Mock logic if AI fails
     if not tags:
-        mock_tags = ["mountains", "beaches", "sports", "crowd", "nature", "portrait", "event", "night"]
-        tags = random.sample(mock_tags, k=random.randint(2, 4))
+        tags = ["photography"]
+        
+    # Save the tags to the database
+    media.tags = json.dumps(tags)
+    db.commit()
         
     return {"tags": tags}
 

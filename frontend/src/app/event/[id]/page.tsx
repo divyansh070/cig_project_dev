@@ -19,6 +19,7 @@ interface Media {
   filename: string;
   url: string;
   upload_date: string;
+  tags?: string;
 }
 
 export default function EventGalleryPage() {
@@ -112,9 +113,21 @@ export default function EventGalleryPage() {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   }
 
-  const filteredMedia = media.filter(m => 
-    m.filename.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredMedia = media.filter(m => {
+    const matchesFilename = m.filename.toLowerCase().includes(searchQuery.toLowerCase());
+    let matchesTags = false;
+    if (m.tags) {
+      try {
+        const parsedTags = JSON.parse(m.tags);
+        if (Array.isArray(parsedTags)) {
+          matchesTags = parsedTags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+        }
+      } catch (e) {
+        // ignore parse error
+      }
+    }
+    return matchesFilename || matchesTags;
+  });
 
   return (
     <div className="min-h-screen p-8 max-w-7xl mx-auto text-gray-900">
@@ -217,11 +230,20 @@ export default function EventGalleryPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                   <p className="text-sm font-medium truncate mb-1 text-white">{m.filename}</p>
                   
-                  {/* AI Tags Simulation */}
+                  {/* AI Tags */}
                   <div className="flex gap-1 mb-2 overflow-x-auto no-scrollbar">
-                    {["event", "photography", "fun"].map((tag, i) => (
-                       <span key={i} className="text-[10px] bg-primary/80 text-white px-2 py-0.5 rounded-full border border-primary/50 shadow-sm">{tag}</span>
-                    ))}
+                    {(() => {
+                      let tagArray = [];
+                      try {
+                        if (m.tags) tagArray = JSON.parse(m.tags);
+                      } catch (e) {}
+                      if (!Array.isArray(tagArray) || tagArray.length === 0) {
+                        tagArray = ["processing..."];
+                      }
+                      return tagArray.map((tag, i) => (
+                         <span key={i} className="text-[10px] bg-primary/80 text-white px-2 py-0.5 rounded-full border border-primary/50 shadow-sm whitespace-nowrap">{tag}</span>
+                      ));
+                    })()}
                   </div>
 
                   <div className="flex justify-between items-center mt-2">

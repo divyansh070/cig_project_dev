@@ -54,6 +54,7 @@ class Media(Base):
     id = Column(Integer, primary_key=True, index=True)
     filename = Column(String)
     url = Column(String) # Local path or S3 URL
+    tags = Column(String, nullable=True) # JSON string of tags
     upload_date = Column(DateTime, default=datetime.datetime.utcnow)
     event_id = Column(Integer, ForeignKey("events.id"))
     uploader_id = Column(Integer, ForeignKey("users.id"))

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, BackgroundTasks
 from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List
@@ -11,6 +11,7 @@ import io
 
 import models, schemas, auth
 from database import get_db
+from routers.ai import generate_tags
 
 router = APIRouter(prefix="/media", tags=["media"])
 
@@ -32,8 +33,15 @@ if S3_ENABLED:
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY
     )
 
+async def trigger_ai_tagging(media_id: int, db: Session, user: models.User):
+    try:
+        await generate_tags(media_id=media_id, db=db, current_user=user)
+    except Exception as e:
+        print(f"Background AI tagging failed: {e}")
+
 @router.post("/upload", response_model=schemas.Media)
 async def upload_media(
+    background_tasks: BackgroundTasks,
     event_id: int = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
@@ -78,6 +86,9 @@ async def upload_media(
     db.add(db_media)
     db.commit()
     db.refresh(db_media)
+    
+    # Trigger AI Tagging in the background so upload remains fast
+    background_tasks.add_task(trigger_ai_tagging, db_media.id, db, current_user)
     
     return db_media
 

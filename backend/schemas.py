@@ -28,6 +28,7 @@ class EventCreate(EventBase):
 class MediaBase(BaseModel):
     filename: str
     url: str
+    tags: Optional[str] = None
 
 class MediaCreate(MediaBase):
     event_id: int
