@@ -201,7 +201,7 @@ export default function EventGalleryPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 layout
-                className="relative group rounded-xl overflow-hidden glass-panel border border-gray-100 mb-4 inline-block w-full shadow-sm"
+                className="relative group rounded-xl overflow-hidden bg-white border border-gray-100 mb-4 inline-block w-full shadow-sm break-inside-avoid"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
