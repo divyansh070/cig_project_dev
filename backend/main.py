@@ -1,5 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+import os
+
+load_dotenv() # Load variables from .env file
+
 from database import engine
 import models
 from routers import auth, events, media, social, ai, notifications
