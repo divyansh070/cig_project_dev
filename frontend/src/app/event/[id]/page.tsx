@@ -106,18 +106,18 @@ export default function EventGalleryPage() {
   );
 
   return (
-    <div className="min-h-screen p-8 max-w-7xl mx-auto">
-      <Link href="/dashboard" className="inline-flex items-center gap-2 text-muted hover:text-white mb-8 transition-colors">
+    <div className="min-h-screen p-8 max-w-7xl mx-auto text-gray-900">
+      <Link href="/dashboard" className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 mb-8 transition-colors">
         <ArrowLeft className="w-4 h-4" />
         Back to Dashboard
       </Link>
 
       <div className="mb-10 flex justify-between items-start">
         <div>
-          <h1 className="text-4xl font-bold mb-2">{event?.name}</h1>
-          <p className="text-muted text-lg mb-2">{event?.description}</p>
+          <h1 className="text-4xl font-bold mb-2 text-gray-900">{event?.name}</h1>
+          <p className="text-gray-500 text-lg mb-2">{event?.description}</p>
           <div className="flex gap-2">
-            <span className="text-xs bg-white/10 px-3 py-1 rounded-full text-white/70">Your role: {eventRole}</span>
+            <span className="text-xs bg-gray-100 px-3 py-1 rounded-full text-gray-600 border border-gray-200 shadow-sm">Your role: {eventRole}</span>
           </div>
         </div>
         <div className="flex gap-3">
@@ -134,7 +134,7 @@ export default function EventGalleryPage() {
                   }
                 }
               }}
-              className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg border border-blue-500/20"
+              className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-all shadow-sm border border-blue-200"
             >
               Assign Role
             </button>
@@ -144,7 +144,7 @@ export default function EventGalleryPage() {
               navigator.clipboard.writeText(window.location.href);
               alert("Event link copied to clipboard!");
             }}
-            className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg border border-white/5"
+            className="bg-white hover:bg-gray-50 text-gray-800 px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-all shadow-sm border border-gray-200"
           >
             <Share2 className="w-4 h-4" />
             Share Event
@@ -156,41 +156,41 @@ export default function EventGalleryPage() {
         <div 
           {...getRootProps()} 
           className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-300 mb-10 flex flex-col items-center justify-center
-            ${isDragActive ? 'border-primary bg-primary/10 scale-[1.02]' : 'border-white/20 hover:border-white/40 bg-black/40'}
+            ${isDragActive ? 'border-primary bg-primary/5 scale-[1.02]' : 'border-gray-300 hover:border-primary/50 bg-white/50 shadow-sm'}
             ${uploading ? 'opacity-50 cursor-wait' : ''}`}
         >
           <input {...getInputProps()} disabled={uploading} />
           {uploading ? (
             <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
           ) : (
-            <UploadCloud className={`w-12 h-12 mb-4 ${isDragActive ? 'text-primary' : 'text-muted'}`} />
+            <UploadCloud className={`w-12 h-12 mb-4 ${isDragActive ? 'text-primary' : 'text-gray-400'}`} />
           )}
-          <p className="text-xl font-medium mb-2">{uploading ? "Uploading media..." : "Drag & drop photos here"}</p>
-          <p className="text-muted text-sm">or click to select files from your computer</p>
+          <p className="text-xl font-medium mb-2 text-gray-900">{uploading ? "Uploading media..." : "Drag & drop photos here"}</p>
+          <p className="text-gray-500 text-sm">or click to select files from your computer</p>
         </div>
       )}
 
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
+        <h2 className="text-2xl font-bold flex items-center gap-2 text-gray-900">
           <ImageIcon className="w-6 h-6 text-primary" />
           Event Gallery
         </h2>
         
         <div className="relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input 
             type="text" 
             placeholder="Search photos by filename..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-white/5 border border-white/10 rounded-full pl-9 pr-4 py-2 focus:outline-none focus:border-primary/50 text-sm min-w-[250px]"
+            className="bg-white border border-gray-200 rounded-full pl-9 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm min-w-[250px] shadow-sm text-gray-900"
           />
         </div>
       </div>
 
       {filteredMedia.length === 0 ? (
-        <div className="py-20 text-center glass-panel rounded-2xl">
-          <p className="text-muted text-lg">No photos found matching your search.</p>
+        <div className="py-20 text-center glass-panel rounded-2xl border border-gray-100">
+          <p className="text-gray-500 text-lg">No photos found matching your search.</p>
         </div>
       ) : (
         <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
@@ -201,7 +201,7 @@ export default function EventGalleryPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 layout
-                className="relative group rounded-xl overflow-hidden glass-panel border-0 mb-4 inline-block w-full"
+                className="relative group rounded-xl overflow-hidden glass-panel border border-gray-100 mb-4 inline-block w-full shadow-sm"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
@@ -210,13 +210,13 @@ export default function EventGalleryPage() {
                   className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                  <p className="text-sm font-medium truncate mb-1">{m.filename}</p>
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                  <p className="text-sm font-medium truncate mb-1 text-white">{m.filename}</p>
                   
                   {/* AI Tags Simulation */}
                   <div className="flex gap-1 mb-2 overflow-x-auto no-scrollbar">
                     {["event", "photography", "fun"].map((tag, i) => (
-                       <span key={i} className="text-[10px] bg-primary/40 px-2 py-0.5 rounded-full border border-primary/20">{tag}</span>
+                       <span key={i} className="text-[10px] bg-primary/80 text-white px-2 py-0.5 rounded-full border border-primary/50 shadow-sm">{tag}</span>
                     ))}
                   </div>
 
@@ -228,7 +228,7 @@ export default function EventGalleryPage() {
                           await api.post(`/social/like/${m.id}`);
                           alert('Liked!');
                         }}
-                        className="text-xs bg-white/20 hover:bg-primary py-1.5 px-3 rounded-full transition-colors backdrop-blur-md font-medium"
+                        className="text-xs bg-white/20 hover:bg-primary text-white py-1.5 px-3 rounded-full transition-colors backdrop-blur-md font-medium border border-white/30"
                       >
                         Like
                       </button>
@@ -237,7 +237,7 @@ export default function EventGalleryPage() {
                           e.preventDefault();
                           openMediaDetails(m);
                         }}
-                        className="text-xs bg-white/20 hover:bg-white/40 py-1.5 px-3 rounded-full transition-colors backdrop-blur-md font-medium"
+                        className="text-xs bg-white/20 hover:bg-white/40 text-white py-1.5 px-3 rounded-full transition-colors backdrop-blur-md font-medium border border-white/30"
                       >
                         Discussion
                       </button>
@@ -263,7 +263,7 @@ export default function EventGalleryPage() {
                           alert("Failed to download image.");
                         }
                       }}
-                      className="text-xs bg-primary hover:bg-primary-hover text-white py-1.5 px-3 rounded-full transition-colors font-medium shadow-lg"
+                      className="text-xs bg-primary hover:bg-primary-hover text-white py-1.5 px-3 rounded-full transition-colors font-medium shadow-md"
                     >
                       Download
                     </button>
@@ -277,40 +277,40 @@ export default function EventGalleryPage() {
 
       {/* Social Modal */}
       {selectedMedia && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <motion.div 
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="glass-panel rounded-2xl w-full max-w-4xl flex flex-col md:flex-row overflow-hidden max-h-[90vh]"
+            className="glass-panel rounded-2xl w-full max-w-4xl flex flex-col md:flex-row overflow-hidden max-h-[90vh] bg-white shadow-2xl border border-gray-200"
           >
-            <div className="w-full md:w-2/3 bg-black flex items-center justify-center p-4">
+            <div className="w-full md:w-2/3 bg-gray-100 flex items-center justify-center p-4 border-r border-gray-200">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 src={`http://localhost:8000/media/view/${selectedMedia.url.split('/').pop()}`} 
                 alt="Selected"
-                className="max-w-full max-h-[80vh] object-contain"
+                className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-sm"
               />
             </div>
-            <div className="w-full md:w-1/3 p-6 flex flex-col border-l border-white/10 bg-[#111]">
+            <div className="w-full md:w-1/3 p-6 flex flex-col bg-white">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="font-bold text-lg">Discussion</h3>
-                <button onClick={() => setSelectedMedia(null)} className="text-muted hover:text-white">&times; Close</button>
+                <h3 className="font-bold text-lg text-gray-900">Discussion</h3>
+                <button onClick={() => setSelectedMedia(null)} className="text-gray-400 hover:text-gray-900 font-medium transition-colors">&times; Close</button>
               </div>
               
-              <div className="flex-grow overflow-y-auto mb-4 space-y-4 no-scrollbar">
+              <div className="flex-grow overflow-y-auto mb-4 space-y-4 no-scrollbar pr-2">
                 {comments.length === 0 ? (
-                  <p className="text-muted text-sm text-center mt-10">No comments yet. Be the first!</p>
+                  <p className="text-gray-500 text-sm text-center mt-10">No comments yet. Be the first!</p>
                 ) : (
                   comments.map(c => (
-                    <div key={c.id} className="bg-white/5 p-3 rounded-lg">
-                      <p className="text-xs text-primary mb-1">User {c.user_id}</p>
-                      <p className="text-sm">{c.text}</p>
+                    <div key={c.id} className="bg-gray-50 p-3 rounded-lg border border-gray-100 shadow-sm">
+                      <p className="text-xs text-primary font-medium mb-1">User {c.user_id}</p>
+                      <p className="text-sm text-gray-800">{c.text}</p>
                     </div>
                   ))
                 )}
               </div>
 
-              <div className="pt-4 border-t border-white/10">
+              <div className="pt-4 border-t border-gray-100">
                 <p className="text-sm mb-4 font-medium text-primary">{likesCount} Likes</p>
                 <div className="flex gap-2">
                   <button 
@@ -318,7 +318,7 @@ export default function EventGalleryPage() {
                       await api.post(`/social/like/${selectedMedia.id}`);
                       openMediaDetails(selectedMedia); // Refresh
                     }}
-                    className="flex-1 bg-white/10 hover:bg-white/20 py-2 rounded-lg text-sm font-medium transition-colors"
+                    className="flex-1 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-800 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
                   >
                     Like
                   </button>
@@ -330,7 +330,7 @@ export default function EventGalleryPage() {
                         openMediaDetails(selectedMedia); // Refresh
                       }
                     }}
-                    className="flex-1 bg-primary hover:bg-primary-hover text-white py-2 rounded-lg text-sm font-medium transition-colors"
+                    className="flex-1 bg-primary hover:bg-primary-hover text-white py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
                   >
                     Comment
                   </button>

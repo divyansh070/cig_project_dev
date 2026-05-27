@@ -78,11 +78,11 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen p-8 max-w-7xl mx-auto">
+    <div className="min-h-screen p-8 max-w-7xl mx-auto text-gray-900">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold mb-2">Events Dashboard</h1>
-          <p className="text-muted">Welcome back! You are viewing as a <span className="text-primary font-medium">{isClubMember ? "Club Member" : "Standard User"}</span>.</p>
+          <p className="text-gray-500">Welcome back! You are viewing as a <span className="text-primary font-medium">{isClubMember ? "Club Member" : "Standard User"}</span>.</p>
         </div>
         
         <div className="flex gap-4">
@@ -98,20 +98,20 @@ export default function DashboardPage() {
                 }
               }
             }}
-            className="bg-green-500/20 hover:bg-green-500/30 text-green-400 px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg border border-green-500/20"
+            className="bg-green-100 hover:bg-green-200 text-green-700 border border-green-200 px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm"
           >
             Add Member
           </button>
           <button 
             onClick={() => setShowCreateModal(true)}
-            className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-primary/20"
+            className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-md"
           >
             <Plus className="w-5 h-5" />
             Create Event
           </button>
           <Link 
             href="/face-search"
-            className="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg border border-white/5"
+            className="bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 px-5 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-sm"
           >
             <Search className="w-5 h-5" />
             Find Myself
@@ -121,7 +121,7 @@ export default function DashboardPage() {
               localStorage.removeItem("token");
               router.push("/");
             }}
-            className="bg-red-500/10 hover:bg-red-500/20 text-red-400 px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg border border-red-500/10"
+            className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm"
           >
             Logout
           </button>
@@ -135,12 +135,12 @@ export default function DashboardPage() {
           placeholder="Search events by name or category..." 
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-grow bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm"
+          className="flex-grow bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm shadow-sm"
         />
         <select 
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm min-w-[200px]"
+          className="bg-white border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm min-w-[200px] shadow-sm"
         >
           <option value="date_desc">Newest First</option>
           <option value="date_asc">Oldest First</option>
@@ -154,15 +154,15 @@ export default function DashboardPage() {
           <Link href={`/event/${event.id}`} key={event.id}>
             <motion.div 
               whileHover={{ y: -5 }}
-              className="glass-panel p-6 rounded-2xl cursor-pointer hover:border-primary/50 transition-all group"
+              className="glass-panel p-6 rounded-2xl cursor-pointer hover:border-primary/30 transition-all group border border-gray-100"
             >
-              <div className="bg-white/5 w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+              <div className="bg-blue-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/10 transition-colors border border-blue-100">
                 <ImageIcon className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-xl font-bold mb-2">{event.name}</h3>
-              <p className="text-muted text-sm mb-4 line-clamp-2">{event.description || "No description provided."}</p>
+              <h3 className="text-xl font-bold mb-2 text-gray-900">{event.name}</h3>
+              <p className="text-gray-500 text-sm mb-4 line-clamp-2">{event.description || "No description provided."}</p>
               
-              <div className="flex items-center gap-4 text-xs font-medium text-muted">
+              <div className="flex items-center gap-4 text-xs font-medium text-gray-500">
                 <div className="flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5" />
                   {new Date(event.date).toLocaleDateString()}
@@ -173,7 +173,7 @@ export default function DashboardPage() {
                     {event.category}
                   </div>
                 )}
-                <div className={`px-2 py-0.5 rounded-full ml-auto ${event.is_public ? 'bg-green-500/20 text-green-400' : 'bg-orange-500/20 text-orange-400'}`}>
+                <div className={`px-2 py-0.5 rounded-full ml-auto ${event.is_public ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
                   {event.is_public ? 'Public' : 'Private'}
                 </div>
               </div>
@@ -181,48 +181,48 @@ export default function DashboardPage() {
           </Link>
         ))}
         {events.length === 0 && (
-          <div className="col-span-full py-20 text-center border-2 border-dashed border-white/10 rounded-2xl">
-            <Calendar className="w-12 h-12 text-muted mx-auto mb-4 opacity-50" />
-            <h3 className="text-xl font-medium mb-2">No events found</h3>
-            <p className="text-muted">Create your first event to get started.</p>
+          <div className="col-span-full py-20 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-white/50">
+            <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4 opacity-50" />
+            <h3 className="text-xl font-medium mb-2 text-gray-900">No events found</h3>
+            <p className="text-gray-500">Create your first event to get started.</p>
           </div>
         )}
       </div>
 
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <motion.div 
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="glass-panel p-8 rounded-2xl w-full max-w-lg"
+            className="glass-panel p-8 rounded-2xl w-full max-w-lg bg-white/90 border border-gray-200 shadow-2xl"
           >
-            <h2 className="text-2xl font-bold mb-6">Create New Event</h2>
+            <h2 className="text-2xl font-bold mb-6 text-gray-900">Create New Event</h2>
             <form onSubmit={handleCreateEvent} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1 text-muted">Event Name</label>
+                <label className="block text-sm font-medium mb-1 text-gray-700">Event Name</label>
                 <input
                   type="text"
                   value={newEvent.name}
                   onChange={(e) => setNewEvent({...newEvent, name: e.target.value})}
-                  className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-white"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-900 shadow-sm"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1 text-muted">Description</label>
+                <label className="block text-sm font-medium mb-1 text-gray-700">Description</label>
                 <textarea
                   value={newEvent.description}
                   onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
-                  className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-white h-24"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-900 h-24 shadow-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1 text-muted">Category / Location</label>
+                <label className="block text-sm font-medium mb-1 text-gray-700">Category / Location</label>
                 <input
                   type="text"
                   value={newEvent.category}
                   onChange={(e) => setNewEvent({...newEvent, category: e.target.value})}
-                  className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-white"
+                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-900 shadow-sm"
                 />
               </div>
               <div className="flex items-center gap-2 mt-4">
@@ -231,22 +231,22 @@ export default function DashboardPage() {
                   id="is_public"
                   checked={newEvent.is_public}
                   onChange={(e) => setNewEvent({...newEvent, is_public: e.target.checked})}
-                  className="w-4 h-4 rounded border-white/10 bg-black/40 text-primary focus:ring-primary"
+                  className="w-4 h-4 rounded border-gray-300 bg-white text-primary focus:ring-primary"
                 />
-                <label htmlFor="is_public" className="text-sm font-medium text-white">Make this event public</label>
+                <label htmlFor="is_public" className="text-sm font-medium text-gray-800">Make this event public</label>
               </div>
               
               <div className="flex gap-3 mt-8">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 bg-white/5 hover:bg-white/10 text-white font-medium py-2.5 rounded-lg transition-colors"
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2.5 rounded-lg transition-colors border border-gray-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-primary hover:bg-primary-hover text-white font-medium py-2.5 rounded-lg transition-colors"
+                  className="flex-1 bg-primary hover:bg-primary-hover text-white font-medium py-2.5 rounded-lg transition-colors shadow-sm"
                 >
                   Create Event
                 </button>

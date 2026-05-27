@@ -38,20 +38,20 @@ export default function LoginPage() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-panel p-8 rounded-2xl w-full max-w-md relative z-10 border border-white/5 shadow-2xl"
+        className="glass-panel p-8 rounded-2xl w-full max-w-md relative z-10 border border-gray-200 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] bg-white/80"
       >
         <div className="flex justify-center mb-8">
-          <div className="bg-gradient-to-tr from-primary to-blue-400 p-3 rounded-2xl shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+          <div className="bg-gradient-to-tr from-primary to-blue-400 p-3 rounded-2xl shadow-[0_4px_20px_rgba(59,130,246,0.3)]">
             <Camera className="w-8 h-8 text-white" />
           </div>
         </div>
         
-        <h1 className="text-2xl font-bold text-center mb-2 text-white">Welcome Back</h1>
-        <p className="text-muted text-center mb-8">Sign in to your account</p>
+        <h1 className="text-2xl font-bold text-center mb-2 text-gray-900">Welcome Back</h1>
+        <p className="text-gray-500 text-center mb-8">Sign in to your account</p>
 
         <button 
           onClick={() => alert('Google OAuth integration coming soon!')}
-          className="w-full bg-white text-black font-semibold py-2.5 rounded-lg mb-6 flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors shadow-md"
+          className="w-full bg-white text-gray-800 border border-gray-200 font-semibold py-2.5 rounded-lg mb-6 flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors shadow-sm"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -76,35 +76,35 @@ export default function LoginPage() {
         </button>
 
         <div className="flex items-center gap-4 mb-6">
-          <div className="h-px bg-white/10 flex-grow" />
-          <span className="text-muted text-sm">or sign in with email</span>
-          <div className="h-px bg-white/10 flex-grow" />
+          <div className="h-px bg-gray-200 flex-grow" />
+          <span className="text-gray-400 text-sm">or sign in with email</span>
+          <div className="h-px bg-gray-200 flex-grow" />
         </div>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg mb-6 text-sm">
+          <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-lg mb-6 text-sm">
             {error}
           </div>
         )}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1 text-muted">Username</label>
+            <label className="block text-sm font-medium mb-1 text-gray-700">Username</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-white transition-all"
+              className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-900 transition-all shadow-sm"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 text-muted">Password</label>
+            <label className="block text-sm font-medium mb-1 text-gray-700">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-white transition-all"
+              className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-900 transition-all shadow-sm"
               required
             />
           </div>
@@ -112,14 +112,14 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary hover:bg-primary-hover text-white font-medium py-2.5 rounded-lg transition-colors mt-6 shadow-[0_0_20px_rgba(59,130,246,0.3)] hover:shadow-[0_0_30px_rgba(59,130,246,0.5)]"
+            className="w-full bg-primary hover:bg-primary-hover text-white font-medium py-2.5 rounded-lg transition-colors mt-6 shadow-[0_4px_14px_0_rgba(59,130,246,0.39)] hover:shadow-[0_6px_20px_rgba(59,130,246,0.23)]"
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
-        <p className="text-center mt-6 text-sm text-muted">
-          Don't have an account? <a href="/register" className="text-primary hover:underline">Register</a>
+        <p className="text-center mt-6 text-sm text-gray-500">
+          Don't have an account? <a href="/register" className="text-primary hover:underline font-medium">Register</a>
         </p>
       </motion.div>
     </div>

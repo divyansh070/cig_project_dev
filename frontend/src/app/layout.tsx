@@ -27,16 +27,16 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col relative bg-[#050505] text-white selection:bg-primary/30">
+      <body className="min-h-full flex flex-col relative bg-[#fcfcfc] text-gray-900 selection:bg-primary/20">
         {/* Global Ambient Background */}
         <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
           {/* Subtle Grid Pattern */}
-          <div className="absolute inset-0 bg-grid-pattern opacity-50" />
+          <div className="absolute inset-0 bg-grid-pattern opacity-100" />
           
-          {/* Glowing Orbs */}
-          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-600/10 blur-[150px]" />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-600/10 blur-[150px]" />
-          <div className="absolute top-[40%] left-[50%] translate-x-[-50%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px]" />
+          {/* Soft Pastel Glowing Orbs */}
+          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-100 blur-[120px] opacity-70" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-pink-100 blur-[120px] opacity-70" />
+          <div className="absolute top-[40%] left-[50%] translate-x-[-50%] w-[40%] h-[40%] rounded-full bg-orange-50 blur-[100px] opacity-60" />
         </div>
         
         {/* Main Content */}
