@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 import io
 
 import models, schemas, auth
-from database import get_db
+from database import get_db, SessionLocal
 from routers.ai import generate_tags
 
 router = APIRouter(prefix="/media", tags=["media"])
@@ -33,11 +33,16 @@ if S3_ENABLED:
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY
     )
 
-async def trigger_ai_tagging(media_id: int, db: Session, user: models.User):
+async def trigger_ai_tagging(media_id: int, user_id: int):
+    db = SessionLocal()
     try:
+        # We need a fresh user object as well, or just skip passing it if generate_tags doesn't really use it
+        user = db.query(models.User).filter(models.User.id == user_id).first()
         await generate_tags(media_id=media_id, db=db, current_user=user)
     except Exception as e:
         print(f"Background AI tagging failed: {e}")
+    finally:
+        db.close()
 
 @router.post("/upload", response_model=schemas.Media)
 async def upload_media(
@@ -88,7 +93,7 @@ async def upload_media(
     db.refresh(db_media)
     
     # Trigger AI Tagging in the background so upload remains fast
-    background_tasks.add_task(trigger_ai_tagging, db_media.id, db, current_user)
+    background_tasks.add_task(trigger_ai_tagging, db_media.id, current_user.id)
     
     return db_media
 
