@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDropzone } from "react-dropzone";
-import { UploadCloud, ArrowLeft, Loader2, Image as ImageIcon, Search } from "lucide-react";
+import { UploadCloud, ArrowLeft, Loader2, Image as ImageIcon, Search, Share2 } from "lucide-react";
 import { api } from "@/lib/api";
 import Link from "next/link";
 
@@ -109,9 +109,21 @@ export default function EventGalleryPage() {
         Back to Dashboard
       </Link>
 
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold mb-2">{event?.name}</h1>
-        <p className="text-muted text-lg">{event?.description}</p>
+      <div className="mb-10 flex justify-between items-start">
+        <div>
+          <h1 className="text-4xl font-bold mb-2">{event?.name}</h1>
+          <p className="text-muted text-lg">{event?.description}</p>
+        </div>
+        <button 
+          onClick={() => {
+            navigator.clipboard.writeText(window.location.href);
+            alert("Event link copied to clipboard!");
+          }}
+          className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg border border-white/5"
+        >
+          <Share2 className="w-4 h-4" />
+          Share Event
+        </button>
       </div>
 
       {(userRole === "Admin" || userRole === "Photographer" || userRole === "Club Member") && (

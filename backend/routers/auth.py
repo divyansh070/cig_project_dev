@@ -48,3 +48,21 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 @router.get("/me", response_model=schemas.User)
 def read_users_me(current_user: models.User = Depends(auth.get_current_user)):
     return current_user
+
+@router.put("/upgrade-role")
+def upgrade_role(
+    username: str, 
+    new_role: models.RoleEnum,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    if current_user.role != models.RoleEnum.admin:
+        raise HTTPException(status_code=403, detail="Only Admins can change roles")
+        
+    user = db.query(models.User).filter(models.User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    user.role = new_role
+    db.commit()
+    return {"message": f"User {username} upgraded to {new_role.value}"}

@@ -35,8 +35,14 @@ def read_events(
 ):
     query = db.query(models.Event)
     
-    # Viewers can only see public events
-    if current_user.role == models.RoleEnum.viewer:
+    if current_user.role in [models.RoleEnum.admin, models.RoleEnum.club_member]:
+        # Admins and Club Members can see all events (including private)
+        pass
+    elif current_user.role == models.RoleEnum.photographer:
+        # Photographers can see public events OR events they created
+        query = query.filter((models.Event.is_public == True) | (models.Event.creator_id == current_user.id))
+    else:
+        # Viewers can only see public events
         query = query.filter(models.Event.is_public == True)
         
     events = query.offset(skip).limit(limit).all()
@@ -52,7 +58,8 @@ def read_event(
     if event is None:
         raise HTTPException(status_code=404, detail="Event not found")
         
-    if current_user.role == models.RoleEnum.viewer and not event.is_public:
-        raise HTTPException(status_code=403, detail="You do not have permission to view this private event.")
+    if not event.is_public:
+        if current_user.role not in [models.RoleEnum.admin, models.RoleEnum.club_member] and event.creator_id != current_user.id:
+            raise HTTPException(status_code=403, detail="You do not have permission to view this private event.")
         
     return event

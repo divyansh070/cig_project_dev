@@ -86,6 +86,24 @@ export default function DashboardPage() {
         </div>
         
         <div className="flex gap-4">
+          {userRole === "Admin" && (
+            <button 
+              onClick={async () => {
+                const username = prompt("Enter the username to promote to Club Member:");
+                if (username) {
+                  try {
+                    await api.put(`/auth/upgrade-role?username=${username}&new_role=Club Member`);
+                    alert(`Successfully promoted ${username} to Club Member!`);
+                  } catch (e) {
+                    alert("Failed to promote user. Check username.");
+                  }
+                }
+              }}
+              className="bg-green-500/20 hover:bg-green-500/30 text-green-400 px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg border border-green-500/20"
+            >
+              Add Member
+            </button>
+          )}
           {(userRole === "Admin" || userRole === "Photographer") && (
             <button 
               onClick={() => setShowCreateModal(true)}
