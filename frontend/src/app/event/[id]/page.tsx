@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDropzone } from "react-dropzone";
-import { UploadCloud, ArrowLeft, Loader2, Image as ImageIcon } from "lucide-react";
+import { UploadCloud, ArrowLeft, Loader2, Image as ImageIcon, Search } from "lucide-react";
 import { api } from "@/lib/api";
 import Link from "next/link";
 
@@ -34,6 +34,7 @@ export default function EventGalleryPage() {
   const [likesCount, setLikesCount] = useState(0);
 
   const eventId = params.id;
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchData = useCallback(async () => {
     try {
@@ -72,92 +73,91 @@ export default function EventGalleryPage() {
   }, [fetchData]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (acceptedFiles.length === 0) return;
     setUploading(true);
+    for (const file of acceptedFiles) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("event_id", eventId as string);
 
-    try {
-      const uploadPromises = acceptedFiles.map(file => {
-        const formData = new FormData();
-        formData.append("event_id", eventId as string);
-        formData.append("file", file);
-        return api.post("/media/upload", formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+      try {
+        await api.post("/media/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
         });
-      });
-
-      await Promise.all(uploadPromises);
-      fetchData(); // Refresh gallery
-    } catch (err) {
-      console.error(err);
-      alert("Failed to upload some files.");
-    } finally {
-      setUploading(false);
+      } catch (err) {
+        console.error(err);
+        alert("Failed to upload some files.");
+      }
     }
+    setUploading(false);
+    fetchData(); // Refresh gallery
   }, [eventId, fetchData]);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
-    onDrop,
-    accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.webp']
-    }
-  });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   }
 
-  if (!event) {
-    return <div className="min-h-screen flex items-center justify-center text-xl">Event not found.</div>;
-  }
-
-  const canUpload = userRole === "Admin" || userRole === "Photographer" || userRole === "Club Member";
+  const filteredMedia = media.filter(m => 
+    m.filename.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen p-8 max-w-7xl mx-auto">
+      <Link href="/dashboard" className="inline-flex items-center gap-2 text-muted hover:text-white mb-8 transition-colors">
+        <ArrowLeft className="w-4 h-4" />
+        Back to Dashboard
+      </Link>
+
       <div className="mb-10">
-        <Link href="/dashboard" className="inline-flex items-center gap-2 text-muted hover:text-white transition-colors mb-6">
-          <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-        </Link>
-        <h1 className="text-4xl font-extrabold mb-2">{event.name}</h1>
-        <p className="text-muted text-lg">{event.description}</p>
+        <h1 className="text-4xl font-bold mb-2">{event?.name}</h1>
+        <p className="text-muted text-lg">{event?.description}</p>
       </div>
 
-      {canUpload && (
+      {(userRole === "Admin" || userRole === "Photographer" || userRole === "Club Member") && (
         <div 
           {...getRootProps()} 
-          className={`mb-12 border-2 border-dashed rounded-2xl p-10 text-center transition-all cursor-pointer ${
-            isDragActive ? "border-primary bg-primary/10" : "border-white/10 hover:border-primary/50 bg-white/[0.02]"
-          }`}
+          className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-300 mb-10 flex flex-col items-center justify-center
+            ${isDragActive ? 'border-primary bg-primary/10 scale-[1.02]' : 'border-white/20 hover:border-white/40 bg-black/40'}
+            ${uploading ? 'opacity-50 cursor-wait' : ''}`}
         >
-          <input {...getInputProps()} />
-          <div className="flex flex-col items-center justify-center">
-            {uploading ? (
-              <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
-            ) : (
-              <UploadCloud className={`w-12 h-12 mb-4 transition-colors ${isDragActive ? "text-primary" : "text-muted"}`} />
-            )}
-            <h3 className="text-xl font-medium mb-2">
-              {uploading ? "Uploading media..." : isDragActive ? "Drop files here" : "Drag & drop photos here"}
-            </h3>
-            <p className="text-muted text-sm">
-              {!uploading && "or click to select files from your computer"}
-            </p>
-          </div>
+          <input {...getInputProps()} disabled={uploading} />
+          {uploading ? (
+            <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+          ) : (
+            <UploadCloud className={`w-12 h-12 mb-4 ${isDragActive ? 'text-primary' : 'text-muted'}`} />
+          )}
+          <p className="text-xl font-medium mb-2">{uploading ? "Uploading media..." : "Drag & drop photos here"}</p>
+          <p className="text-muted text-sm">or click to select files from your computer</p>
         </div>
       )}
 
-      <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-        <ImageIcon className="w-6 h-6 text-primary" /> Event Gallery
-      </h2>
-      
-      {media.length === 0 ? (
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          <ImageIcon className="w-6 h-6 text-primary" />
+          Event Gallery
+        </h2>
+        
+        <div className="relative">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+          <input 
+            type="text" 
+            placeholder="Search photos by filename..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="bg-white/5 border border-white/10 rounded-full pl-9 pr-4 py-2 focus:outline-none focus:border-primary/50 text-sm min-w-[250px]"
+          />
+        </div>
+      </div>
+
+      {filteredMedia.length === 0 ? (
         <div className="py-20 text-center glass-panel rounded-2xl">
-          <p className="text-muted text-lg">No photos uploaded yet.</p>
+          <p className="text-muted text-lg">No photos found matching your search.</p>
         </div>
       ) : (
         <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
           <AnimatePresence>
-            {media.map((m) => (
+            {filteredMedia.map((m) => (
               <motion.div
                 key={m.id}
                 initial={{ opacity: 0, scale: 0.9 }}

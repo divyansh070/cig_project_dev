@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Plus, Calendar, Image as ImageIcon, MapPin, Loader2 } from "lucide-react";
+import { Plus, Calendar, Image as ImageIcon, MapPin, Loader2, Search } from "lucide-react";
 import { api } from "@/lib/api";
 import Link from "next/link";
 
@@ -25,6 +25,10 @@ export default function DashboardPage() {
   
   // Create Event Form State
   const [newEvent, setNewEvent] = useState({ name: "", description: "", category: "", is_public: false });
+  
+  // Search & Sorting State
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("date_desc");
 
   useEffect(() => {
     fetchData();
@@ -58,31 +62,72 @@ export default function DashboardPage() {
     }
   };
 
+  const filteredAndSortedEvents = events
+    .filter(e => e.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                 (e.category && e.category.toLowerCase().includes(searchQuery.toLowerCase())))
+    .sort((a, b) => {
+      if (sortBy === "date_desc") return new Date(b.date).getTime() - new Date(a.date).getTime();
+      if (sortBy === "date_asc") return new Date(a.date).getTime() - new Date(b.date).getTime();
+      if (sortBy === "name_asc") return a.name.localeCompare(b.name);
+      if (sortBy === "category") return (a.category || "").localeCompare(b.category || "");
+      return 0;
+    });
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   }
 
   return (
     <div className="min-h-screen p-8 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-10">
+      <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold mb-2">Events Dashboard</h1>
           <p className="text-muted">Welcome back! You are viewing as a <span className="text-primary font-medium">{userRole}</span>.</p>
         </div>
         
-        {(userRole === "Admin" || userRole === "Photographer") && (
-          <button 
-            onClick={() => setShowCreateModal(true)}
-            className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-primary/20"
+        <div className="flex gap-4">
+          {(userRole === "Admin" || userRole === "Photographer") && (
+            <button 
+              onClick={() => setShowCreateModal(true)}
+              className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg shadow-primary/20"
+            >
+              <Plus className="w-5 h-5" />
+              Create Event
+            </button>
+          )}
+          <Link 
+            href="/face-search"
+            className="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg border border-white/5"
           >
-            <Plus className="w-5 h-5" />
-            Create Event
-          </button>
-        )}
+            <Search className="w-5 h-5" />
+            Find Myself
+          </Link>
+        </div>
+      </div>
+
+      {/* Advanced Search & Sorting */}
+      <div className="flex flex-col md:flex-row gap-4 mb-10">
+        <input 
+          type="text" 
+          placeholder="Search events by name or category..." 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="flex-grow bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm"
+        />
+        <select 
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary/50 text-sm min-w-[200px]"
+        >
+          <option value="date_desc">Newest First</option>
+          <option value="date_asc">Oldest First</option>
+          <option value="name_asc">Name (A-Z)</option>
+          <option value="category">Category</option>
+        </select>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {events.map((event) => (
+        {filteredAndSortedEvents.map((event) => (
           <Link href={`/event/${event.id}`} key={event.id}>
             <motion.div 
               whileHover={{ y: -5 }}

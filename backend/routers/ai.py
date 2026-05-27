@@ -58,8 +58,8 @@ async def search_faces(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
-    # This endpoint receives a reference selfie and returns matching media IDs
-    matched_media_ids = []
+    # This endpoint receives a reference selfie and returns matching media objects
+    matched_media = []
     
     content = await file.read()
     
@@ -76,6 +76,6 @@ async def search_faces(
     # Mock fallback: return random media as matches to demonstrate the UI workflow
     all_media = db.query(models.Media).limit(10).all()
     if all_media:
-        matched_media_ids = [m.id for m in random.sample(all_media, k=min(3, len(all_media)))]
+        matched_media = random.sample(all_media, k=min(3, len(all_media)))
         
-    return {"matched_media_ids": matched_media_ids}
+    return {"matched_media": [{"id": m.id, "url": m.url, "filename": m.filename, "upload_date": m.upload_date} for m in matched_media]}
