@@ -35,11 +35,11 @@ if S3_ENABLED:
         region_name=AWS_REGION
     )
 
-def trigger_ai_tagging(media_id: int, user_id: int):
+async def trigger_ai_tagging(media_id: int, user_id: int):
     db = SessionLocal()
     try:
         user = db.query(models.User).filter(models.User.id == user_id).first()
-        generate_tags(media_id=media_id, db=db, current_user=user)
+        await generate_tags(media_id=media_id, db=db, current_user=user)
     except Exception as e:
         print(f"Background AI tagging failed: {e}")
     finally:

@@ -35,7 +35,7 @@ CANDIDATE_LABELS = [
 ]
 
 @router.post("/tag/{media_id}")
-def generate_tags(
+async def generate_tags(
     media_id: int, 
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
@@ -84,6 +84,7 @@ def generate_tags(
         elif not USE_LOCAL_AI:
             try:
                 from google import genai
+                from google.genai import types
                 from PIL import Image
                 import io
                 
@@ -96,9 +97,13 @@ def generate_tags(
                     
                     prompt = "You are an expert image tagger. Provide up to 3 precise tags that best describe the contents of this image. Keep the tags short (1-2 words). Return only the tags separated by commas, nothing else. If you cannot determine any tags, return 'photography'."
                     
-                    response = client.models.generate_content(
+                    response = await client.aio.models.generate_content(
                         model='gemini-2.5-flash',
-                        contents=[prompt, img]
+                        contents=[prompt, img],
+                        config=types.GenerateContentConfig(
+                            max_output_tokens=30,
+                            temperature=0.2
+                        )
                     )
                     
                     # Parse the comma-separated response
