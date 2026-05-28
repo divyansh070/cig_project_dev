@@ -7,10 +7,13 @@ def cleanup():
     media_records = db.query(models.Media).all()
     count = 0
     for m in media_records:
-        file_path = os.path.join("uploads", m.filename)
+        # Extract unique_filename from url /media/view/unique_filename
+        unique_filename = m.url.split('/')[-1]
+        file_path = os.path.join("uploads", unique_filename)
+        
         # If it was uploaded locally (exists in uploads folder)
         if os.path.exists(file_path):
-            print(f"Deleting local file and DB record: {m.filename}")
+            print(f"Deleting local file and DB record: {unique_filename}")
             os.remove(file_path)
             db.delete(m)
             count += 1
