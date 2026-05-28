@@ -31,7 +31,7 @@ router = APIRouter(prefix="/ai", tags=["ai"])
 CANDIDATE_LABELS = [
     "portrait", "group of people", "mountain", "beach", "sports", 
     "indoor event", "night", "nature", "city", "wedding", "concert",
-    "food", "pet", "architecture", "vehicle"
+    "food", "pet", "architecture", "vehicle","person"
 ]
 
 @router.post("/tag/{media_id}")
@@ -94,7 +94,7 @@ async def generate_tags(
                     # Gemini expects a PIL image
                     img = Image.open(io.BytesIO(image_content))
                     
-                    prompt = f"You are an image classifier. Choose up to 3 of the following tags that best describe this image: {', '.join(CANDIDATE_LABELS)}. Return only the exact tags separated by commas, nothing else. If none fit, return 'photography'."
+                    prompt = "You are an expert image tagger. Provide up to 3 precise tags that best describe the contents of this image. Keep the tags short (1-2 words). Return only the tags separated by commas, nothing else. If you cannot determine any tags, return 'photography'."
                     
                     response = client.models.generate_content(
                         model='gemini-2.5-flash',
@@ -104,10 +104,7 @@ async def generate_tags(
                     # Parse the comma-separated response
                     if response.text:
                         gemini_tags = [t.strip().lower() for t in response.text.split(',')]
-                        
-                        # Validate against candidate labels
-                        valid_tags = [t for t in gemini_tags if t in CANDIDATE_LABELS]
-                        tags = valid_tags[:3]
+                        tags = gemini_tags[:3]
                 else:
                     print("GEMINI_API_KEY not set. Using mock tags.")
             except Exception as e:
