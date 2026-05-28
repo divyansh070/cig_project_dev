@@ -35,12 +35,11 @@ if S3_ENABLED:
         region_name=AWS_REGION
     )
 
-async def trigger_ai_tagging(media_id: int, user_id: int):
+def trigger_ai_tagging(media_id: int, user_id: int):
     db = SessionLocal()
     try:
-        # We need a fresh user object as well, or just skip passing it if generate_tags doesn't really use it
         user = db.query(models.User).filter(models.User.id == user_id).first()
-        await generate_tags(media_id=media_id, db=db, current_user=user)
+        generate_tags(media_id=media_id, db=db, current_user=user)
     except Exception as e:
         print(f"Background AI tagging failed: {e}")
     finally:
@@ -75,7 +74,8 @@ async def upload_media(
                 ContentType=file.content_type
             )
             upload_success = True
-        except NoCredentialsError:
+        except Exception as e:
+            print(f"S3 Upload Error: {e}")
             pass # Fallback to local
             
     if not upload_success:

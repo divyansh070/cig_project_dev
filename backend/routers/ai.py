@@ -35,7 +35,7 @@ CANDIDATE_LABELS = [
 ]
 
 @router.post("/tag/{media_id}")
-async def generate_tags(
+def generate_tags(
     media_id: int, 
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
