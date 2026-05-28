@@ -90,7 +90,7 @@ async def generate_tags(
                 # Ensure Gemini credentials exist in environment
                 if "GEMINI_API_KEY" in os.environ:
                     genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-                    model = genai.GenerativeModel('gemini-1.5-flash')
+                    model = genai.GenerativeModel('gemini-2.5-flash')
                     
                     # Gemini expects a PIL image
                     img = Image.open(io.BytesIO(image_content))
