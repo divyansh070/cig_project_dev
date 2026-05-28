@@ -107,16 +107,19 @@ def get_event_media(event_id: int, db: Session = Depends(get_db)):
 @router.get("/view/{filename}")
 def view_media(filename: str):
     file_path = os.path.join(UPLOAD_DIR, filename)
-    try:
-        if S3_ENABLED:
+    
+    if S3_ENABLED:
+        try:
             obj = s3_client.get_object(Bucket=AWS_BUCKET_NAME, Key=filename)
             return StreamingResponse(obj['Body'], media_type="image/jpeg")
-        else:
-            if not os.path.exists(file_path):
-                raise HTTPException(status_code=404, detail="File not found")
-            return FileResponse(file_path)
-    except Exception as e:
-        raise HTTPException(status_code=404, detail="Error fetching file")
+        except Exception:
+            pass # Fallback to local if not found in S3
+            
+    # Local File Fallback
+    if os.path.exists(file_path):
+        return FileResponse(file_path)
+    
+    raise HTTPException(status_code=404, detail="File not found")
 
 @router.get("/download/{filename}")
 def download_media(
@@ -131,16 +134,19 @@ def download_media(
     event_name = media_record.event.name if media_record and media_record.event else "Event"
     
     # Load Image
-    try:
-        if S3_ENABLED:
+    img = None
+    if S3_ENABLED:
+        try:
             obj = s3_client.get_object(Bucket=AWS_BUCKET_NAME, Key=filename)
             img = Image.open(obj['Body'])
-        else:
-            if not os.path.exists(file_path):
-                raise HTTPException(status_code=404, detail="File not found")
+        except Exception:
+            pass # Fallback to local
+            
+    if img is None:
+        if os.path.exists(file_path):
             img = Image.open(file_path)
-    except Exception as e:
-        raise HTTPException(status_code=404, detail="Error fetching file")
+        else:
+            raise HTTPException(status_code=404, detail="File not found")
 
     # Innovation Feature: Dynamic Image Watermarking
     try:
