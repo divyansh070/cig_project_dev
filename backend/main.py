@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
 
-load_dotenv() # Load variables from .env file
+load_dotenv(override=True) # Force load variables from .env file overriding shell vars
 
 from database import engine
 import models
