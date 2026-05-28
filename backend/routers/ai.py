@@ -80,36 +80,36 @@ async def generate_tags(
             except Exception as e:
                 print(f"AI tagging error: {e}")
 
-        # Fallback: Google Cloud Vision API if Local AI is disabled
+        # Fallback: Gemini API if Local AI is disabled
         elif not USE_LOCAL_AI:
             try:
-                from google.cloud import vision
+                import google.generativeai as genai
+                from PIL import Image
+                import io
                 
-                # Ensure Google credentials exist in environment
-                if "GOOGLE_APPLICATION_CREDENTIALS" in os.environ:
-                    client = vision.ImageAnnotatorClient()
+                # Ensure Gemini credentials exist in environment
+                if "GEMINI_API_KEY" in os.environ:
+                    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+                    model = genai.GenerativeModel('gemini-1.5-flash')
                     
-                    image = vision.Image(content=image_content)
-                    response = client.label_detection(image=image)
-                    labels = response.label_annotations
+                    # Gemini expects a PIL image
+                    img = Image.open(io.BytesIO(image_content))
                     
-                    # Extract tag descriptions from Google Vision
-                    vision_tags = [label.description.lower() for label in labels]
+                    prompt = f"You are an image classifier. Choose up to 3 of the following tags that best describe this image: {', '.join(CANDIDATE_LABELS)}. Return only the exact tags separated by commas, nothing else. If none fit, return 'photography'."
                     
-                    # Try to map Google tags to our specific CANDIDATE_LABELS for UI consistency
-                    matched_tags = []
-                    for v_tag in vision_tags:
-                        for c_tag in CANDIDATE_LABELS:
-                            if c_tag in v_tag or v_tag in c_tag:
-                                if c_tag not in matched_tags:
-                                    matched_tags.append(c_tag)
-                                    
-                    # Take up to 3 mapped tags, or fallback to generic Google tags
-                    tags = matched_tags[:3] if matched_tags else vision_tags[:3]
+                    response = model.generate_content([prompt, img])
+                    
+                    # Parse the comma-separated response
+                    if response.text:
+                        gemini_tags = [t.strip().lower() for t in response.text.split(',')]
+                        
+                        # Validate against candidate labels
+                        valid_tags = [t for t in gemini_tags if t in CANDIDATE_LABELS]
+                        tags = valid_tags[:3]
                 else:
-                    print("GOOGLE_APPLICATION_CREDENTIALS not set. Using mock tags.")
+                    print("GEMINI_API_KEY not set. Using mock tags.")
             except Exception as e:
-                print(f"Google Vision API error: {e}")
+                print(f"Gemini API error: {e}")
 
     # Final Fallback / Mock logic if all AI fails
     if not tags:
