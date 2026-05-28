@@ -113,8 +113,10 @@ async def generate_tags(
                 else:
                     print("GEMINI_API_KEY not set. Using mock tags.")
             except Exception as e:
+                error_msg = str(e)[:30]
                 print(f"Gemini API error: {e}")
-
+                tags = [f"error: {error_msg}"]
+        
     # Final Fallback / Mock logic if all AI fails
     if not tags:
         tags = ["photography"]

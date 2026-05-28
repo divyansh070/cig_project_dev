@@ -35,15 +35,6 @@ if S3_ENABLED:
         region_name=AWS_REGION
     )
 
-async def trigger_ai_tagging(media_id: int, user_id: int):
-    db = SessionLocal()
-    try:
-        user = db.query(models.User).filter(models.User.id == user_id).first()
-        await generate_tags(media_id=media_id, db=db, current_user=user)
-    except Exception as e:
-        print(f"Background AI tagging failed: {e}")
-    finally:
-        db.close()
 
 @router.post("/upload", response_model=schemas.Media)
 async def upload_media(
@@ -94,9 +85,13 @@ async def upload_media(
     db.commit()
     db.refresh(db_media)
     
-    # Trigger AI Tagging in the background so upload remains fast
-    background_tasks.add_task(trigger_ai_tagging, db_media.id, current_user.id)
-    
+    # Run AI Tagging synchronously since it is now very fast
+    try:
+        await generate_tags(media_id=db_media.id, db=db, current_user=current_user)
+        db.refresh(db_media)
+    except Exception as e:
+        print(f"Failed to run tagging during upload: {e}")
+        
     return db_media
 
 @router.get("/event/{event_id}", response_model=List[schemas.Media])
