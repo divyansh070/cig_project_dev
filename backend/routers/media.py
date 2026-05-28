@@ -190,3 +190,57 @@ def download_media(
     img_byte_arr.seek(0)
     
     return StreamingResponse(img_byte_arr, media_type=f"image/{img_format.lower()}")
+
+@router.delete("/{media_id}")
+def delete_media(
+    media_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    # Find the media
+    media = db.query(models.Media).filter(models.Media.id == media_id).first()
+    if not media:
+        raise HTTPException(status_code=404, detail="Media not found")
+        
+    # Security Check: Must be the uploader or an Admin of the event
+    if media.uploader_id != current_user.id:
+        # Check if user is admin
+        is_admin = False
+        if current_user.role == "admin":
+            is_admin = True
+        else:
+            # Maybe they are admin of this specific event?
+            event_member = db.query(models.EventMember).filter(
+                models.EventMember.event_id == media.event_id,
+                models.EventMember.user_id == current_user.id,
+                models.EventMember.role == "admin"
+            ).first()
+            if event_member:
+                is_admin = True
+                
+        if not is_admin:
+            raise HTTPException(status_code=403, detail="You do not have permission to delete this photo")
+            
+    # File Deletion
+    filename = media.url.split('/')[-1]
+    
+    # 1. Try to delete from S3
+    if S3_ENABLED and s3_client:
+        try:
+            s3_client.delete_object(Bucket=AWS_BUCKET_NAME, Key=filename)
+        except Exception as e:
+            print(f"Failed to delete from S3: {e}")
+            
+    # 2. Try to delete from local disk
+    file_path = os.path.join(UPLOAD_DIR, filename)
+    if os.path.exists(file_path):
+        try:
+            os.remove(file_path)
+        except Exception as e:
+            print(f"Failed to delete local file: {e}")
+            
+    # DB Deletion
+    db.delete(media)
+    db.commit()
+    
+    return {"message": "Media deleted successfully"}

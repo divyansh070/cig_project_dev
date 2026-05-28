@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDropzone } from "react-dropzone";
-import { UploadCloud, ArrowLeft, Loader2, Image as ImageIcon, Search, Share2 } from "lucide-react";
+import { UploadCloud, ArrowLeft, Loader2, Image as ImageIcon, Search, Share2, Trash2 } from "lucide-react";
 import { api } from "@/lib/api";
 import Link from "next/link";
 
@@ -20,6 +20,7 @@ interface Media {
   url: string;
   upload_date: string;
   tags?: string;
+  uploader_id: number;
 }
 
 export default function EventGalleryPage() {
@@ -36,6 +37,7 @@ export default function EventGalleryPage() {
   const [likesCount, setLikesCount] = useState(0);
   const [showTeamModal, setShowTeamModal] = useState(false);
   const [members, setMembers] = useState<{username: string, is_club_member: boolean, role: string}[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   const eventId = params.id;
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,12 +45,13 @@ export default function EventGalleryPage() {
   const fetchData = useCallback(async () => {
     try {
       const [userRes, roleRes, eventRes, mediaRes] = await Promise.all([
-        api.get("/auth/me").catch(() => ({ data: { is_club_member: false } })),
+        api.get("/auth/me").catch(() => ({ data: { is_club_member: false, id: null } })),
         api.get(`/events/${eventId}/role`).catch(() => ({ data: { role: "Viewer" } })),
         api.get(`/events/${eventId}`),
         api.get(`/media/event/${eventId}`)
       ]);
       setIsClubMember(userRes.data.is_club_member);
+      setCurrentUserId(userRes.data.id);
       setEventRole(roleRes.data.role);
       setEvent(eventRes.data);
       setMedia(mediaRes.data);
@@ -227,6 +230,28 @@ export default function EventGalleryPage() {
                   className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
                 />
+                
+                {/* Delete Button (Top Right) */}
+                {(currentUserId === m.uploader_id || eventRole === "Admin") && (
+                  <button
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      if (confirm("Are you sure you want to permanently delete this photo?")) {
+                        try {
+                          await api.delete(`/media/${m.id}`);
+                          setMedia(prev => prev.filter(media => media.id !== m.id));
+                        } catch (err) {
+                          alert("Failed to delete photo.");
+                        }
+                      }
+                    }}
+                    className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-600 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 backdrop-blur-md"
+                    title="Delete Photo"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+
                 <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                   <p className="text-sm font-medium truncate mb-1 text-white">{m.filename}</p>
                   
