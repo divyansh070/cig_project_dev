@@ -83,21 +83,23 @@ async def generate_tags(
         # Fallback: Gemini API if Local AI is disabled
         elif not USE_LOCAL_AI:
             try:
-                import google.generativeai as genai
+                from google import genai
                 from PIL import Image
                 import io
                 
                 # Ensure Gemini credentials exist in environment
                 if "GEMINI_API_KEY" in os.environ:
-                    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-                    model = genai.GenerativeModel('gemini-2.5-flash')
+                    client = genai.Client() # Picks up GEMINI_API_KEY from os.environ
                     
                     # Gemini expects a PIL image
                     img = Image.open(io.BytesIO(image_content))
                     
                     prompt = f"You are an image classifier. Choose up to 3 of the following tags that best describe this image: {', '.join(CANDIDATE_LABELS)}. Return only the exact tags separated by commas, nothing else. If none fit, return 'photography'."
                     
-                    response = model.generate_content([prompt, img])
+                    response = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=[prompt, img]
+                    )
                     
                     # Parse the comma-separated response
                     if response.text:
