@@ -9,7 +9,13 @@ from database import get_db
 import models
 import os
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "a_very_secret_key_for_testing")
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY:
+    # If in a production-like environment (e.g. Render/Vercel) without a secret key, CRASH
+    if os.environ.get("NODE_ENV") == "production" or os.environ.get("RENDER"):
+        raise ValueError("FATAL ERROR: SECRET_KEY environment variable is not set in production!")
+    print("WARNING: Using weak fallback SECRET_KEY for local development.")
+    SECRET_KEY = "a_very_secret_key_for_testing"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 1 week
 

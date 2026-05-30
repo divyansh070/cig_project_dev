@@ -48,7 +48,28 @@ async def upload_media(
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
         
-    file_extension = os.path.splitext(file.filename)[1]
+    # Authorization Check (IDOR Prevention)
+    has_permission = False
+    if event.creator_id == current_user.id:
+        has_permission = True
+    else:
+        user_role = db.query(models.EventRole).filter(
+            models.EventRole.event_id == event_id,
+            models.EventRole.user_id == current_user.id
+        ).first()
+        # Ensure role is checking enum properly, if it's stored as enum, use value or compare enum
+        if user_role and user_role.role.value in ["Admin", "Photographer"]:
+            has_permission = True
+            
+    if not has_permission:
+        raise HTTPException(status_code=403, detail="You do not have permission to upload photos to this event.")
+        
+    # Strict File Validation
+    ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+    file_extension = os.path.splitext(file.filename)[1].lower()
+    if file_extension not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Invalid file type. Only JPG, PNG, and WebP are allowed.")
+        
     unique_filename = f"{uuid.uuid4()}{file_extension}"
     file_path = os.path.join(UPLOAD_DIR, unique_filename)
 
@@ -100,12 +121,32 @@ async def upload_media(
     return db_media
 
 @router.get("/event/{event_id}", response_model=List[schemas.Media])
-def get_event_media(event_id: int, db: Session = Depends(get_db)):
+def get_event_media(
+    event_id: int, 
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+        
+    # Security Check: Prevent unauthenticated data exposure
+    if not event.is_public:
+        if not current_user.is_club_member and event.creator_id != current_user.id:
+            user_role = db.query(models.EventRole).filter(
+                models.EventRole.event_id == event_id,
+                models.EventRole.user_id == current_user.id
+            ).first()
+            if not user_role:
+                raise HTTPException(status_code=403, detail="You do not have permission to view this event's photos.")
+
     media = db.query(models.Media).filter(models.Media.event_id == event_id).all()
     return media
 
 @router.get("/view/{filename}")
 def view_media(filename: str):
+    # Path Traversal Prevention
+    filename = os.path.basename(filename)
     file_path = os.path.join(UPLOAD_DIR, filename)
     
     if S3_ENABLED:
@@ -132,6 +173,8 @@ def download_media(
     db: Session = Depends(get_db), 
     current_user: models.User = Depends(auth.get_current_user)
 ):
+    # Path Traversal Prevention
+    filename = os.path.basename(filename)
     file_path = os.path.join(UPLOAD_DIR, filename)
     
     # Check if media exists in DB to get Event info for watermarking
