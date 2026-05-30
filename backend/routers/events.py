@@ -43,6 +43,9 @@ def read_events(
     all_events = db.query(models.Event).offset(skip).limit(limit).all()
     
     # Filter based on contextual permissions
+    if current_user.is_superuser:
+        return all_events
+        
     visible_events = []
     for ev in all_events:
         if ev.is_public:
