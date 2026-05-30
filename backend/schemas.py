@@ -6,6 +6,7 @@ class UserBase(BaseModel):
     username: str
     email: str
     is_club_member: bool = False
+    is_superuser: bool = False
 
 class UserCreate(UserBase):
     password: str

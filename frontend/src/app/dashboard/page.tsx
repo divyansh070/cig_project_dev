@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Plus, Calendar, Image as ImageIcon, MapPin, Loader2, Search } from "lucide-react";
+import { Plus, Calendar, Image as ImageIcon, MapPin, Loader2, Search, Trash2 } from "lucide-react";
 import { api, API_URL } from "@/lib/api";
 import Link from "next/link";
 
@@ -14,6 +14,7 @@ interface Event {
   date: string;
   category: string;
   is_public: boolean;
+  creator_id: number;
   media: { id: number; url: string; filename: string }[];
 }
 
@@ -32,6 +33,8 @@ export default function DashboardPage() {
   const [sortBy, setSortBy] = useState("date_desc");
 
   const [username, setUsername] = useState("");
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+  const [isSuperuser, setIsSuperuser] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   useEffect(() => {
@@ -46,6 +49,8 @@ export default function DashboardPage() {
       ]);
       setIsClubMember(userRes.data.is_club_member);
       setUsername(userRes.data.username);
+      setCurrentUserId(userRes.data.id);
+      setIsSuperuser(userRes.data.is_superuser);
       setEvents(eventsRes.data);
     } catch (err) {
       console.error(err);
@@ -195,8 +200,27 @@ export default function DashboardPage() {
           <Link href={`/event/${event.id}`} key={event.id}>
             <motion.div 
               whileHover={{ y: -5 }}
-              className="glass-panel p-6 rounded-2xl cursor-pointer hover:border-primary/30 transition-all group border border-gray-100"
+              className="relative glass-panel p-6 rounded-2xl cursor-pointer hover:border-primary/30 transition-all group border border-gray-100"
             >
+              {(event.creator_id === currentUserId || isSuperuser) && (
+                <button
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    if (confirm(`Are you sure you want to delete "${event.name}"? This cannot be undone.`)) {
+                      try {
+                        await api.delete(`/events/${event.id}`);
+                        fetchData();
+                      } catch (err) {
+                        alert("Failed to delete event.");
+                      }
+                    }
+                  }}
+                  className="absolute top-4 right-4 bg-red-50 text-red-500 hover:bg-red-500 hover:text-white p-2 rounded-xl transition-all z-10 border border-red-100 shadow-sm opacity-0 group-hover:opacity-100"
+                  title="Delete Event"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
               <div className="bg-blue-50 w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/10 transition-colors border border-blue-100">
                 <ImageIcon className="w-6 h-6 text-primary" />
               </div>

@@ -50,7 +50,7 @@ async def upload_media(
         
     # Authorization Check (IDOR Prevention)
     has_permission = False
-    if event.creator_id == current_user.id:
+    if current_user.is_superuser or event.creator_id == current_user.id:
         has_permission = True
     else:
         user_role = db.query(models.EventRole).filter(
@@ -132,7 +132,7 @@ def get_event_media(
         
     # Security Check: Prevent unauthenticated data exposure
     if not event.is_public:
-        if not current_user.is_club_member and event.creator_id != current_user.id:
+        if not current_user.is_superuser and not current_user.is_club_member and event.creator_id != current_user.id:
             user_role = db.query(models.EventRole).filter(
                 models.EventRole.event_id == event_id,
                 models.EventRole.user_id == current_user.id
@@ -274,7 +274,7 @@ def delete_media(
         raise HTTPException(status_code=404, detail="Media not found")
         
     # Security Check: Must be the uploader or an Admin of the event
-    if media.uploader_id != current_user.id:
+    if not current_user.is_superuser and media.uploader_id != current_user.id:
         # Check if user is an event admin
         is_admin = False
         

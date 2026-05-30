@@ -161,6 +161,24 @@ export default function EventGalleryPage() {
               Manage Team
             </button>
           )}
+          {eventRole === "Admin" && (
+            <button 
+              onClick={async () => {
+                if (confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
+                  try {
+                    await api.delete(`/events/${eventId}`);
+                    router.push('/dashboard');
+                  } catch (err) {
+                    alert("Failed to delete event.");
+                  }
+                }
+              }}
+              className="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-all shadow-sm border border-red-200"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete Event
+            </button>
+          )}
           <button 
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);

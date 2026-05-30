@@ -72,7 +72,7 @@ def read_event(
         raise HTTPException(status_code=404, detail="Event not found")
         
     if not event.is_public:
-        if not current_user.is_club_member and event.creator_id != current_user.id:
+        if not current_user.is_superuser and not current_user.is_club_member and event.creator_id != current_user.id:
             user_role = db.query(models.EventRole).filter(
                 models.EventRole.event_id == event.id,
                 models.EventRole.user_id == current_user.id
@@ -100,9 +100,10 @@ def assign_role(
         models.EventRole.user_id == current_user.id
     ).first()
     
-    if not current_user_role or current_user_role.role != models.EventRoleEnum.admin:
-        if event.creator_id != current_user.id:
-            raise HTTPException(status_code=403, detail="Only Event Admins can assign roles.")
+    if not current_user.is_superuser:
+        if not current_user_role or current_user_role.role != models.EventRoleEnum.admin:
+            if event.creator_id != current_user.id:
+                raise HTTPException(status_code=403, detail="Only Event Admins can assign roles.")
             
     target_user = db.query(models.User).filter(models.User.username == username).first()
     if not target_user:
@@ -133,6 +134,9 @@ def get_user_role(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
+    if current_user.is_superuser:
+        return {"role": "Admin"}
+        
     # Check if they are the creator
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
     if event and event.creator_id == current_user.id:
@@ -198,9 +202,10 @@ def remove_role(
         models.EventRole.user_id == current_user.id
     ).first()
     
-    if not current_user_role or current_user_role.role != models.EventRoleEnum.admin:
-        if event.creator_id != current_user.id:
-            raise HTTPException(status_code=403, detail="Only Event Admins can remove roles.")
+    if not current_user.is_superuser:
+        if not current_user_role or current_user_role.role != models.EventRoleEnum.admin:
+            if event.creator_id != current_user.id:
+                raise HTTPException(status_code=403, detail="Only Event Admins can remove roles.")
             
     target_user = db.query(models.User).filter(models.User.username == username).first()
     if not target_user:
@@ -216,3 +221,35 @@ def remove_role(
         db.commit()
         
     return {"message": f"Successfully removed role for {username}"}
+
+@router.delete("/{event_id}")
+def delete_event(
+    event_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+        
+    current_user_role = db.query(models.EventRole).filter(
+        models.EventRole.event_id == event_id,
+        models.EventRole.user_id == current_user.id
+    ).first()
+    
+    if not current_user.is_superuser:
+        if (not current_user_role or current_user_role.role != models.EventRoleEnum.admin) and event.creator_id != current_user.id:
+            raise HTTPException(status_code=403, detail="Only Event Admins can delete events.")
+            
+    # Delete associated data
+    media_items = db.query(models.Media).filter(models.Media.event_id == event.id).all()
+    for m in media_items:
+        db.query(models.Like).filter(models.Like.media_id == m.id).delete()
+        db.query(models.Comment).filter(models.Comment.media_id == m.id).delete()
+        db.delete(m)
+        
+    db.query(models.EventRole).filter(models.EventRole.event_id == event.id).delete()
+    
+    db.delete(event)
+    db.commit()
+    return {"message": "Event deleted successfully"}

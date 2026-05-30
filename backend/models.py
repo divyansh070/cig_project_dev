@@ -21,6 +21,12 @@ class User(Base):
     events = relationship("Event", back_populates="creator")
     media = relationship("Media", back_populates="uploader")
     event_roles = relationship("EventRole", back_populates="user")
+    
+    @property
+    def is_superuser(self) -> bool:
+        import os
+        devs = os.environ.get("DEVELOPER_USERNAMES", "divyansh070").split(",")
+        return self.username in devs
 
 class EventRole(Base):
     __tablename__ = "event_roles"
