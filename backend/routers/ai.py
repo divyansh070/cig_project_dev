@@ -41,30 +41,16 @@ async def generate_tags(
         with open(file_path, 'rb') as f:
             image_content = f.read()
     else:
-        # Try fetching from S3
+        # Try fetching from S3 directly into memory
         from routers.media import s3_client, S3_ENABLED, AWS_BUCKET_NAME
         if S3_ENABLED and s3_client:
             try:
                 obj = s3_client.get_object(Bucket=AWS_BUCKET_NAME, Key=filename)
                 image_content = obj['Body'].read()
-                # Temporarily save to disk for HuggingFace pipeline which expects a file path
-                with open(file_path, 'wb') as f:
-                    f.write(image_content)
             except Exception as e:
                 print(f"Error fetching from S3 for AI tagging: {e}")
                 
     if image_content:
-        # Run the actual local AI model
-        if AI_ENABLED and image_classifier:
-            try:
-                # Run inference using Zero-Shot
-                results = image_classifier(file_path, candidate_labels=CANDIDATE_LABELS)
-                
-                # Extract top 3 labels with score > 0.1
-                top_results = sorted(results, key=lambda x: x['score'], reverse=True)
-                tags = [res['label'] for res in top_results if res['score'] > 0.1][:3]
-            except Exception as e:
-                print(f"AI tagging error: {e}")
 
         # Fallback: Gemini API if Local AI is disabled
         elif not USE_LOCAL_AI:

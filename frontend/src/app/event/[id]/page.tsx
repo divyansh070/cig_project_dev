@@ -101,6 +101,8 @@ export default function EventGalleryPage() {
         await api.post("/media/upload", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
+        // 500ms delay to prevent server OOM from concurrent background tasks
+        await new Promise(resolve => setTimeout(resolve, 500));
       } catch (err) {
         console.error(err);
         alert("Failed to upload some files.");
