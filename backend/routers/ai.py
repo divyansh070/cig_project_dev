@@ -51,43 +51,41 @@ async def generate_tags(
                 print(f"Error fetching from S3 for AI tagging: {e}")
                 
     if image_content:
-
-        # Fallback: Gemini API if Local AI is disabled
-        elif not USE_LOCAL_AI:
-            try:
-                from google import genai
-                from google.genai import types
-                from PIL import Image
-                import io
+        # Use Gemini API
+        try:
+            from google import genai
+            from google.genai import types
+            from PIL import Image
+            import io
+            
+            # Ensure Gemini credentials exist in environment
+            if "GEMINI_API_KEY" in os.environ:
+                client = genai.Client() # Picks up GEMINI_API_KEY from os.environ
                 
-                # Ensure Gemini credentials exist in environment
-                if "GEMINI_API_KEY" in os.environ:
-                    client = genai.Client() # Picks up GEMINI_API_KEY from os.environ
-                    
-                    # Gemini expects a PIL image
-                    img = Image.open(io.BytesIO(image_content))
-                    
-                    prompt = "You are an expert image captioner. Provide 2 to 3 short, beautiful, and engaging captions describing this image (each caption should be 3-6 words long). Separate each caption strictly with a pipe character '|', and do not use commas. Example: A breathtaking sunset|Enjoying the summer breeze|Nature at its finest. If you cannot determine any captions, return 'A beautiful moment captured|Photography'."
-                    
-                    response = await client.aio.models.generate_content(
-                        model='gemini-2.5-flash',
-                        contents=[prompt, img],
-                        config=types.GenerateContentConfig(
-                            max_output_tokens=60,
-                            temperature=0.4
-                        )
+                # Gemini expects a PIL image
+                img = Image.open(io.BytesIO(image_content))
+                
+                prompt = "You are an expert image captioner. Provide 2 to 3 short, beautiful, and engaging captions describing this image (each caption should be 3-6 words long). Separate each caption strictly with a pipe character '|', and do not use commas. Example: A breathtaking sunset|Enjoying the summer breeze|Nature at its finest. If you cannot determine any captions, return 'A beautiful moment captured|Photography'."
+                
+                response = await client.aio.models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=[prompt, img],
+                    config=types.GenerateContentConfig(
+                        max_output_tokens=60,
+                        temperature=0.4
                     )
-                    
-                    # Parse the pipe-separated response
-                    if response.text:
-                        gemini_tags = [t.strip() for t in response.text.split('|')]
-                        tags = gemini_tags[:3]
-                else:
-                    print("GEMINI_API_KEY not set. Using mock tags.")
-            except Exception as e:
-                error_msg = str(e)[:30]
-                print(f"Gemini API error: {e}")
-                tags = [f"error: {error_msg}"]
+                )
+                
+                # Parse the pipe-separated response
+                if response.text:
+                    gemini_tags = [t.strip() for t in response.text.split('|')]
+                    tags = gemini_tags[:3]
+            else:
+                print("GEMINI_API_KEY not set. Using mock tags.")
+        except Exception as e:
+            error_msg = str(e)[:30]
+            print(f"Gemini API error: {e}")
+            tags = [f"error: {error_msg}"]
         
     # Final Fallback / Mock logic if all AI fails
     if not tags:
