@@ -469,11 +469,13 @@ export default function EventGalleryPage() {
                         Make Photographer
                       </button>
                     )}
-                    {(m.role === "Photographer") && (
+                    {m.role !== "Admin" && (
                       <button 
                         onClick={async () => {
-                          await api.delete(`/events/${eventId}/roles/${m.username}`);
-                          fetchMembers();
+                          if (confirm(`Are you sure you want to remove ${m.username} from this event?`)) {
+                            await api.delete(`/events/${eventId}/roles/${m.username}`);
+                            fetchMembers();
+                          }
                         }}
                         className="text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg font-medium transition-colors"
                       >
