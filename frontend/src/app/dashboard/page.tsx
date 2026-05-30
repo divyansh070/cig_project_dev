@@ -31,6 +31,9 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("date_desc");
 
+  const [username, setUsername] = useState("");
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -42,6 +45,7 @@ export default function DashboardPage() {
         api.get("/events/")
       ]);
       setIsClubMember(userRes.data.is_club_member);
+      setUsername(userRes.data.username);
       setEvents(eventsRes.data);
     } catch (err) {
       console.error(err);
@@ -78,6 +82,9 @@ export default function DashboardPage() {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   }
 
+  // Generate avatar initials
+  const initials = username ? username.substring(0, 2).toUpperCase() : "U";
+
   return (
     <div className="min-h-screen p-8 max-w-7xl mx-auto text-gray-900">
       <div className="flex justify-between items-center mb-6">
@@ -86,7 +93,7 @@ export default function DashboardPage() {
           <p className="text-gray-500">Welcome back! You are viewing as a <span className="text-primary font-medium">{isClubMember ? "Club Member" : "Standard User"}</span>.</p>
         </div>
         
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
           <button 
             onClick={() => setShowCreateModal(true)}
             className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-md"
@@ -101,15 +108,64 @@ export default function DashboardPage() {
             <Search className="w-5 h-5" />
             Find Myself
           </Link>
-          <button 
-            onClick={() => {
-              localStorage.removeItem("token");
-              router.push("/");
-            }}
-            className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm"
-          >
-            Logout
-          </button>
+          
+          {/* Profile Dropdown */}
+          <div className="relative">
+            <button 
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-blue-400 text-white flex items-center justify-center font-bold shadow-md hover:shadow-lg transition-all border-2 border-white focus:outline-none focus:ring-2 focus:ring-primary/50"
+            >
+              {initials}
+            </button>
+            
+            {showProfileMenu && (
+              <>
+                <div 
+                  className="fixed inset-0 z-40" 
+                  onClick={() => setShowProfileMenu(false)}
+                ></div>
+                <motion.div 
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  className="absolute right-0 mt-3 w-64 glass-panel bg-white/95 rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden"
+                >
+                  <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+                    <p className="font-bold text-gray-900 truncate">{username}</p>
+                    <div className="flex items-center mt-1 gap-2">
+                      <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${isClubMember ? 'bg-primary/10 text-primary' : 'bg-gray-200 text-gray-600'}`}>
+                        {isClubMember ? "Club Member" : "Standard User"}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="p-2">
+                    <button 
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        alert("Settings page coming soon!");
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-primary rounded-xl transition-colors flex items-center gap-2"
+                    >
+                      Account Settings
+                    </button>
+                  </div>
+                  
+                  <div className="p-2 border-t border-gray-100">
+                    <button 
+                      onClick={() => {
+                        localStorage.removeItem("token");
+                        router.push("/");
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-2"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                      Log out
+                    </button>
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
