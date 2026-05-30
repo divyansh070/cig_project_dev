@@ -71,4 +71,4 @@ async def comment_media(
 @router.get("/comments/{media_id}")
 def get_comments(media_id: int, db: Session = Depends(get_db)):
     comments = db.query(models.Comment).filter(models.Comment.media_id == media_id).all()
-    return [{"id": c.id, "text": c.text, "user_id": c.user_id, "created_at": c.created_at} for c in comments]
+    return [{"id": c.id, "text": c.text, "user_id": c.user_id, "username": c.user.username if c.user else f"User {c.user_id}", "created_at": c.created_at} for c in comments]

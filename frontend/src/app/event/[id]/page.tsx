@@ -277,7 +277,7 @@ export default function EventGalleryPage() {
                         onClick={async (e) => {
                           e.preventDefault();
                           await api.post(`/social/like/${m.id}`);
-                          alert('Liked!');
+                          // Optional: could add a toast here, but silent is better than alert
                         }}
                         className="text-xs bg-white/20 hover:bg-primary text-white py-1.5 px-3 rounded-full transition-colors backdrop-blur-md font-medium border border-white/30"
                       >
@@ -354,7 +354,7 @@ export default function EventGalleryPage() {
                 ) : (
                   comments.map(c => (
                     <div key={c.id} className="bg-gray-50 p-3 rounded-lg border border-gray-100 shadow-sm">
-                      <p className="text-xs text-primary font-medium mb-1">User {c.user_id}</p>
+                      <p className="text-xs text-primary font-medium mb-1">{c.username || `User ${c.user_id}`}</p>
                       <p className="text-sm text-gray-800">{c.text}</p>
                     </div>
                   ))
@@ -398,63 +398,65 @@ export default function EventGalleryPage() {
           <motion.div 
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="glass-panel rounded-2xl w-full max-w-lg p-6 bg-white shadow-2xl border border-gray-200"
+            className="glass-panel rounded-2xl w-full max-w-xl p-6 bg-white shadow-2xl border border-gray-200"
           >
             <div className="flex justify-between items-center mb-6">
               <h3 className="font-bold text-xl text-gray-900">Manage Team</h3>
               <button onClick={() => setShowTeamModal(false)} className="text-gray-400 hover:text-gray-900 font-medium transition-colors">&times; Close</button>
             </div>
             
-            <div className="flex gap-2 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
+            <div className="flex flex-col sm:flex-row gap-3 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
               <input 
                 type="text" 
                 id="newMemberUsername"
-                placeholder="Enter username..." 
-                className="flex-grow border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-900 bg-white shadow-sm"
+                placeholder="Enter username to invite..." 
+                className="flex-grow border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-900 bg-white shadow-sm"
               />
-              <button 
-                onClick={async () => {
-                  const input = document.getElementById("newMemberUsername") as HTMLInputElement;
-                  if (input && input.value) {
-                    try {
-                      await api.post(`/events/${eventId}/roles?username=${input.value}&role=Viewer`);
-                      input.value = "";
-                      fetchMembers();
-                    } catch (err: any) {
-                      alert(err.response?.data?.detail || "Failed to add user.");
+              <div className="flex gap-2">
+                <button 
+                  onClick={async () => {
+                    const input = document.getElementById("newMemberUsername") as HTMLInputElement;
+                    if (input && input.value) {
+                      try {
+                        await api.post(`/events/${eventId}/roles?username=${input.value}&role=Viewer`);
+                        input.value = "";
+                        fetchMembers();
+                      } catch (err: any) {
+                        alert(err.response?.data?.detail || "Failed to add user.");
+                      }
                     }
-                  }
-                }}
-                className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap"
-              >
-                Add Viewer
-              </button>
-              <button 
-                onClick={async () => {
-                  const input = document.getElementById("newMemberUsername") as HTMLInputElement;
-                  if (input && input.value) {
-                    try {
-                      await api.post(`/events/${eventId}/roles?username=${input.value}&role=Photographer`);
-                      input.value = "";
-                      fetchMembers();
-                    } catch (err: any) {
-                      alert(err.response?.data?.detail || "Failed to add user.");
+                  }}
+                  className="flex-1 sm:flex-none bg-primary hover:bg-primary-hover text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap"
+                >
+                  + Viewer
+                </button>
+                <button 
+                  onClick={async () => {
+                    const input = document.getElementById("newMemberUsername") as HTMLInputElement;
+                    if (input && input.value) {
+                      try {
+                        await api.post(`/events/${eventId}/roles?username=${input.value}&role=Photographer`);
+                        input.value = "";
+                        fetchMembers();
+                      } catch (err: any) {
+                        alert(err.response?.data?.detail || "Failed to add user.");
+                      }
                     }
-                  }
-                }}
-                className="bg-blue-50 hover:bg-blue-100 text-primary border border-blue-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap"
-              >
-                Add Photographer
-              </button>
+                  }}
+                  className="flex-1 sm:flex-none bg-blue-50 hover:bg-blue-100 text-primary border border-blue-200 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap"
+                >
+                  + Photographer
+                </button>
+              </div>
             </div>
             
             <div className="max-h-[50vh] overflow-y-auto space-y-3 pr-2">
               {members.map(m => (
-                <div key={m.username} className="flex justify-between items-center p-3 border border-gray-100 rounded-xl bg-gray-50">
+                <div key={m.username} className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 p-4 border border-gray-100 rounded-xl bg-gray-50/50 hover:bg-gray-50 transition-colors">
                   <div>
-                    <p className="font-medium text-gray-900">{m.username}</p>
-                    <p className="text-xs text-gray-500">
-                      {m.is_club_member ? "Club Member" : "Standard User"} &middot; <span className="font-medium text-primary">{m.role}</span>
+                    <p className="font-semibold text-gray-900">{m.username}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {m.is_club_member ? "Club Member" : "Standard User"} &middot; <span className={`font-medium ${m.role === 'Admin' ? 'text-red-500' : m.role === 'Photographer' ? 'text-primary' : 'text-green-600'}`}>{m.role}</span>
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -464,9 +466,9 @@ export default function EventGalleryPage() {
                           await api.post(`/events/${eventId}/roles?username=${m.username}&role=Photographer`);
                           fetchMembers();
                         }}
-                        className="text-xs bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-lg font-medium transition-colors"
+                        className="text-xs bg-white text-primary border border-primary/20 hover:bg-primary/5 px-3 py-2 rounded-lg font-medium transition-colors shadow-sm"
                       >
-                        Make Photographer
+                        Promote to Photo
                       </button>
                     )}
                     {m.role !== "Admin" && (
@@ -477,7 +479,7 @@ export default function EventGalleryPage() {
                             fetchMembers();
                           }
                         }}
-                        className="text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg font-medium transition-colors"
+                        className="text-xs bg-white text-red-600 border border-red-200 hover:bg-red-50 px-3 py-2 rounded-lg font-medium transition-colors shadow-sm"
                       >
                         Remove
                       </button>
