@@ -88,22 +88,6 @@ export default function DashboardPage() {
         
         <div className="flex gap-4">
           <button 
-            onClick={async () => {
-              const username = prompt("Enter the username to promote to Club Member:");
-              if (username) {
-                try {
-                  await api.put(`/auth/upgrade-role?username=${username}`);
-                  alert(`Successfully promoted ${username} to Club Member!`);
-                } catch (e) {
-                  alert("Failed to promote user. Check username.");
-                }
-              }
-            }}
-            className="bg-green-100 hover:bg-green-200 text-green-700 border border-green-200 px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm"
-          >
-            Add Member
-          </button>
-          <button 
             onClick={() => setShowCreateModal(true)}
             className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl font-medium flex items-center gap-2 transition-all shadow-md"
           >

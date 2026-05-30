@@ -405,7 +405,50 @@ export default function EventGalleryPage() {
               <button onClick={() => setShowTeamModal(false)} className="text-gray-400 hover:text-gray-900 font-medium transition-colors">&times; Close</button>
             </div>
             
-            <div className="max-h-[60vh] overflow-y-auto space-y-3 pr-2">
+            <div className="flex gap-2 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
+              <input 
+                type="text" 
+                id="newMemberUsername"
+                placeholder="Enter username..." 
+                className="flex-grow border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-gray-900 bg-white shadow-sm"
+              />
+              <button 
+                onClick={async () => {
+                  const input = document.getElementById("newMemberUsername") as HTMLInputElement;
+                  if (input && input.value) {
+                    try {
+                      await api.post(`/events/${eventId}/roles?username=${input.value}&role=Viewer`);
+                      input.value = "";
+                      fetchMembers();
+                    } catch (err: any) {
+                      alert(err.response?.data?.detail || "Failed to add user.");
+                    }
+                  }
+                }}
+                className="bg-primary hover:bg-primary-hover text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap"
+              >
+                Add Viewer
+              </button>
+              <button 
+                onClick={async () => {
+                  const input = document.getElementById("newMemberUsername") as HTMLInputElement;
+                  if (input && input.value) {
+                    try {
+                      await api.post(`/events/${eventId}/roles?username=${input.value}&role=Photographer`);
+                      input.value = "";
+                      fetchMembers();
+                    } catch (err: any) {
+                      alert(err.response?.data?.detail || "Failed to add user.");
+                    }
+                  }
+                }}
+                className="bg-blue-50 hover:bg-blue-100 text-primary border border-blue-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap"
+              >
+                Add Photographer
+              </button>
+            </div>
+            
+            <div className="max-h-[50vh] overflow-y-auto space-y-3 pr-2">
               {members.map(m => (
                 <div key={m.username} className="flex justify-between items-center p-3 border border-gray-100 rounded-xl bg-gray-50">
                   <div>
