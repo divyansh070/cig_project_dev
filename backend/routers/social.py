@@ -33,7 +33,13 @@ async def like_media(
         db.commit()
         
         # Real-time notification trigger
-        await notify_all(f"{current_user.username} liked a photo!")
+        import json
+        payload = json.dumps({
+            "message": f"{current_user.username} liked a photo!",
+            "media_id": media_id,
+            "event_id": media.event_id
+        })
+        await notify_all(payload)
         
         return {"status": "liked"}
 
@@ -54,6 +60,10 @@ async def comment_media(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
+    media = db.query(models.Media).filter(models.Media.id == media_id).first()
+    if not media:
+        raise HTTPException(status_code=404, detail="Media not found")
+
     new_comment = models.Comment(
         text=comment.text,
         media_id=media_id,
@@ -64,7 +74,13 @@ async def comment_media(
     db.refresh(new_comment)
     
     # Real-time notification trigger
-    await notify_all(f"{current_user.username} commented on a photo!")
+    import json
+    payload = json.dumps({
+        "message": f"{current_user.username} commented on a photo!",
+        "media_id": media_id,
+        "event_id": media.event_id
+    })
+    await notify_all(payload)
     
     return {"status": "success", "comment_id": new_comment.id}
 

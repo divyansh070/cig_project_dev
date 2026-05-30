@@ -2,22 +2,37 @@
 
 import { useEffect, useState } from "react";
 import { API_URL } from "@/lib/api";
-import { Bell, X } from "lucide-react";
+import { Bell, X, Image as ImageIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 export default function NotificationsClient() {
-  const [notifications, setNotifications] = useState<{ id: string; message: string; isNew: boolean }[]>([]);
+  const [notifications, setNotifications] = useState<{ id: string; message: string; isNew: boolean, eventId?: number, mediaId?: number }[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     // Connect to WebSocket
     const wsUrl = API_URL.replace("http://", "ws://").replace("https://", "wss://") + "/notifications/ws";
-        const ws = new WebSocket(wsUrl);
+    const ws = new WebSocket(wsUrl);
 
     ws.onmessage = (event) => {
-      const message = event.data;
-      const newNotification = { id: Date.now().toString(), message, isNew: true };
+      let messageText = event.data;
+      let eventId = undefined;
+      let mediaId = undefined;
+
+      try {
+        const payload = JSON.parse(event.data);
+        if (payload.message) {
+          messageText = payload.message;
+          eventId = payload.event_id;
+          mediaId = payload.media_id;
+        }
+      } catch (e) {
+        // Not JSON, just standard string
+      }
+
+      const newNotification = { id: Date.now().toString(), message: messageText, isNew: true, eventId, mediaId };
       
       setNotifications((prev) => [newNotification, ...prev]);
       setUnreadCount((prev) => prev + 1);
@@ -60,7 +75,14 @@ export default function NotificationsClient() {
               <div className="bg-primary/20 p-2 rounded-full">
                 <Bell className="w-4 h-4 text-primary-light" />
               </div>
-              <p className="text-sm font-medium pr-4">{toast.message}</p>
+              <div className="pr-2">
+                <p className="text-sm font-medium">{toast.message}</p>
+                {toast.eventId && (
+                  <Link href={`/event/${toast.eventId}`} className="text-xs text-primary-light hover:underline flex items-center gap-1 mt-1">
+                    <ImageIcon className="w-3 h-3" /> View Photo
+                  </Link>
+                )}
+              </div>
             </motion.div>
           ))}
         </AnimatePresence>
@@ -106,7 +128,18 @@ export default function NotificationsClient() {
                   notifications.map((n) => (
                     <div key={n.id} className="p-3 hover:bg-gray-50 rounded-xl transition-colors">
                       <p className="text-sm text-gray-800">{n.message}</p>
-                      <p className="text-[10px] text-gray-400 mt-1">Just now</p>
+                      <div className="flex justify-between items-center mt-1">
+                        <p className="text-[10px] text-gray-400">Just now</p>
+                        {n.eventId && (
+                          <Link 
+                            href={`/event/${n.eventId}`} 
+                            onClick={() => setIsOpen(false)}
+                            className="text-xs text-primary hover:underline flex items-center gap-1 font-medium"
+                          >
+                            <ImageIcon className="w-3 h-3" /> View Photo
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   ))
                 )}
