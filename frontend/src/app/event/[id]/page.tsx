@@ -227,7 +227,10 @@ export default function EventGalleryPage() {
                 <img 
                   src={`${API_URL}/media/view/${m.url.split('/').pop()}`} 
                   alt={m.filename}
-                  className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://placehold.co/400x300/f3f4f6/9ca3af?text=Image+Deleted";
+                  }}
+                  className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105 min-h-[150px] bg-gray-100"
                   loading="lazy"
                 />
                 
