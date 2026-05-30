@@ -98,9 +98,10 @@ function EventGalleryContent() {
       const targetMedia = media.find(m => m.id.toString() === photoId);
       if (targetMedia) {
         openMediaDetails(targetMedia);
+        router.replace(`/event/${params.id}`, { scroll: false });
       }
     }
-  }, [searchParams, media, selectedMedia]);
+  }, [searchParams, media, selectedMedia, params.id, router]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     setUploading(true);
