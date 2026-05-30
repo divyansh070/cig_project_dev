@@ -78,7 +78,7 @@ export default function NotificationsClient() {
               <div className="pr-2">
                 <p className="text-sm font-medium">{toast.message}</p>
                 {toast.eventId && (
-                  <Link href={`/event/${toast.eventId}`} className="text-xs text-primary-light hover:underline flex items-center gap-1 mt-1">
+                  <Link href={`/event/${toast.eventId}${toast.mediaId ? `?photo=${toast.mediaId}` : ''}`} className="text-xs text-primary-light hover:underline flex items-center gap-1 mt-1">
                     <ImageIcon className="w-3 h-3" /> View Photo
                   </Link>
                 )}
@@ -132,7 +132,7 @@ export default function NotificationsClient() {
                         <p className="text-[10px] text-gray-400">Just now</p>
                         {n.eventId && (
                           <Link 
-                            href={`/event/${n.eventId}`} 
+                            href={`/event/${n.eventId}${n.mediaId ? `?photo=${n.mediaId}` : ''}`} 
                             onClick={() => setIsOpen(false)}
                             className="text-xs text-primary hover:underline flex items-center gap-1 font-medium"
                           >

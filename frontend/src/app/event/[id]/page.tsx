@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDropzone } from "react-dropzone";
 import { UploadCloud, ArrowLeft, Loader2, Image as ImageIcon, Search, Share2, Trash2 } from "lucide-react";
@@ -23,9 +23,10 @@ interface Media {
   uploader_id: number;
 }
 
-export default function EventGalleryPage() {
+function EventGalleryContent() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [event, setEvent] = useState<Event | null>(null);
   const [media, setMedia] = useState<Media[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,6 +90,17 @@ export default function EventGalleryPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  // Handle auto-opening photo from notification
+  useEffect(() => {
+    const photoId = searchParams.get("photo");
+    if (photoId && media.length > 0 && !selectedMedia) {
+      const targetMedia = media.find(m => m.id.toString() === photoId);
+      if (targetMedia) {
+        openMediaDetails(targetMedia);
+      }
+    }
+  }, [searchParams, media, selectedMedia]);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     setUploading(true);
@@ -518,5 +530,13 @@ export default function EventGalleryPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function EventGalleryPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
+      <EventGalleryContent />
+    </Suspense>
   );
 }
