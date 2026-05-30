@@ -7,24 +7,10 @@ import json
 import models, auth
 from database import get_db
 
-USE_LOCAL_AI = os.environ.get("USE_LOCAL_AI", "True").lower() == "true"
-
-# Try loading HuggingFace transformers pipeline only if enabled
-if USE_LOCAL_AI:
-    try:
-        from transformers import pipeline
-        print("Loading HuggingFace zero-shot image classification model...")
-        # Using a lightweight CLIP model
-        image_classifier = pipeline("zero-shot-image-classification", model="openai/clip-vit-base-patch32")
-        AI_ENABLED = True
-    except Exception as e:
-        print(f"Failed to load transformers AI model: {e}")
-        image_classifier = None
-        AI_ENABLED = False
-else:
-    print("Local AI disabled via USE_LOCAL_AI environment variable. Using lightweight fallback.")
-    image_classifier = None
-    AI_ENABLED = False
+USE_LOCAL_AI = False
+AI_ENABLED = False
+image_classifier = None
+print("Local HuggingFace AI permanently disabled to preserve memory on Free Tier. Relying solely on Gemini.")
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 

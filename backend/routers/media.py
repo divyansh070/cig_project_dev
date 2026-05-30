@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, BackgroundTasks
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse, RedirectResponse
 from sqlalchemy.orm import Session
 from typing import List
 import os
@@ -85,12 +85,17 @@ async def upload_media(
     db.commit()
     db.refresh(db_media)
     
-    # Run AI Tagging synchronously since it is now very fast
-    try:
-        await generate_tags(media_id=db_media.id, db=db, current_user=current_user)
-        db.refresh(db_media)
-    except Exception as e:
-        print(f"Failed to run tagging during upload: {e}")
+    # Run AI Tagging in the background to free up the request thread instantly
+    async def run_tagging_in_background(media_id_val, user_val):
+        db_session = SessionLocal()
+        try:
+            await generate_tags(media_id=media_id_val, db=db_session, current_user=user_val)
+        except Exception as e:
+            print(f"Failed to queue background tagging: {e}")
+        finally:
+            db_session.close()
+
+    background_tasks.add_task(run_tagging_in_background, db_media.id, current_user)
         
     return db_media
 
@@ -105,8 +110,13 @@ def view_media(filename: str):
     
     if S3_ENABLED:
         try:
-            obj = s3_client.get_object(Bucket=AWS_BUCKET_NAME, Key=filename)
-            return StreamingResponse(obj['Body'], media_type="image/jpeg")
+            # Huge Scalability Win: Direct user to AWS instead of streaming through our tiny 512MB server
+            url = s3_client.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': AWS_BUCKET_NAME, 'Key': filename},
+                ExpiresIn=3600 # URL valid for 1 hour
+            )
+            return RedirectResponse(url=url)
         except Exception:
             pass # Fallback to local if not found in S3
             
@@ -199,18 +209,19 @@ def delete_media(
         
     # Security Check: Must be the uploader or an Admin of the event
     if media.uploader_id != current_user.id:
-        # Check if user is admin
+        # Check if user is an event admin
         is_admin = False
-        if current_user.role == "admin":
+        
+        # In our system, the creator of the event is the admin. We can also check EventRole
+        if media.event.creator_id == current_user.id:
             is_admin = True
         else:
-            # Maybe they are admin of this specific event?
-            event_member = db.query(models.EventMember).filter(
-                models.EventMember.event_id == media.event_id,
-                models.EventMember.user_id == current_user.id,
-                models.EventMember.role == "admin"
+            event_role = db.query(models.EventRole).filter(
+                models.EventRole.event_id == media.event_id,
+                models.EventRole.user_id == current_user.id,
+                models.EventRole.role == "Admin"
             ).first()
-            if event_member:
+            if event_role:
                 is_admin = True
                 
         if not is_admin:
