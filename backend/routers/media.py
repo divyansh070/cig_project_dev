@@ -196,30 +196,53 @@ def download_media(
         else:
             raise HTTPException(status_code=404, detail="File not found")
 
-    # Innovation Feature: Dynamic Image Watermarking
+    # Dynamic Text Watermarking
     try:
         if img.mode != 'RGBA':
             img = img.convert('RGBA')
             
-        watermark_path = "/Users/divyanshverma/Desktop/cig_dev/AetherSnap.png"
-        if os.path.exists(watermark_path):
-            watermark = Image.open(watermark_path).convert("RGBA")
-            
-            # Scale watermark to 30% of the image width
-            wm_width = int(img.width * 0.3)
-            ratio = wm_width / watermark.width
-            wm_height = int(watermark.height * ratio)
-            watermark = watermark.resize((wm_width, wm_height), Image.Resampling.LANCZOS)
-            
-            # Position at bottom right with 20px padding
-            position = (img.width - wm_width - 20, img.height - wm_height - 20)
-            
-            # Paste using alpha channel as mask
-            img.paste(watermark, position, mask=watermark)
-        else:
-            # Fallback text if the file is missing
-            draw = ImageDraw.Draw(img)
-            draw.text((20, 20), "AetherSnap", fill=(255, 255, 255))
+        uploader_name = media_record.uploader.username if media_record and media_record.uploader else "Unknown"
+        event_name = media_record.event.name if media_record and media_record.event else "Event"
+        
+        # Create a transparent overlay
+        overlay = Image.new('RGBA', img.size, (255, 255, 255, 0))
+        draw = ImageDraw.Draw(overlay)
+        
+        text = f"Capture Hub\n{event_name}\nPhotographed by {uploader_name}"
+        
+        # Try to load a reasonable font, fallback to default
+        try:
+            # Try common linux fonts or standard fonts
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", int(img.height * 0.03))
+        except IOError:
+            try:
+                font = ImageFont.truetype("arial.ttf", int(img.height * 0.03))
+            except IOError:
+                font = ImageFont.load_default()
+                
+        # Calculate text bounding box
+        bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+        
+        # Position at bottom right with padding
+        padding = int(img.width * 0.02)
+        x = img.width - text_width - padding
+        y = img.height - text_height - padding
+        
+        # Draw semi-transparent black background box for text readability
+        bg_padding = 10
+        draw.rectangle(
+            [x - bg_padding, y - bg_padding, x + text_width + bg_padding, y + text_height + bg_padding],
+            fill=(0, 0, 0, 160)
+        )
+        
+        # Draw white text
+        draw.text((x, y), text, font=font, fill=(255, 255, 255, 255))
+        
+        # Merge overlay with image
+        img = Image.alpha_composite(img, overlay)
+        
     except Exception as e:
         print(f"Watermark error: {e}")
         pass
