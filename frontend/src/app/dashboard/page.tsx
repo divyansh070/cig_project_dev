@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Plus, Calendar, Image as ImageIcon, MapPin, Loader2, Search } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, API_URL } from "@/lib/api";
 import Link from "next/link";
 
 interface Event {
@@ -169,7 +169,7 @@ export default function DashboardPage() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img 
                       key={m.id} 
-                      src={`http://localhost:8000/media/view/${m.url.split('/').pop()}`} 
+                      src={`${API_URL}/media/view/${m.url.split('/').pop()}`} 
                       alt={m.filename} 
                       className="w-12 h-12 rounded-lg object-cover border border-gray-200 shadow-sm"
                     />

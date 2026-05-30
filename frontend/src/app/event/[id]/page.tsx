@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDropzone } from "react-dropzone";
 import { UploadCloud, ArrowLeft, Loader2, Image as ImageIcon, Search, Share2, Trash2 } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, API_URL } from "@/lib/api";
 import Link from "next/link";
 
 interface Event {
@@ -225,7 +225,7 @@ export default function EventGalleryPage() {
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
-                  src={`http://localhost:8000/media/view/${m.url.split('/').pop()}`} 
+                  src={`${API_URL}/media/view/${m.url.split('/').pop()}`} 
                   alt={m.filename}
                   className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
@@ -337,7 +337,7 @@ export default function EventGalleryPage() {
             <div className="w-full md:w-2/3 bg-gray-100 flex items-center justify-center p-4 border-r border-gray-200">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
-                src={`http://localhost:8000/media/view/${selectedMedia.url.split('/').pop()}`} 
+                src={`${API_URL}/media/view/${selectedMedia.url.split('/').pop()}`} 
                 alt="Selected"
                 className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-sm"
               />

@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { motion, AnimatePresence } from "framer-motion";
 import { UploadCloud, Loader2, Search, ArrowLeft } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, API_URL } from "@/lib/api";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -145,7 +145,7 @@ export default function FaceSearchPage() {
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
-                      src={`http://localhost:8000/media/view/${m.url.split('/').pop()}`} 
+                      src={`${API_URL}/media/view/${m.url.split('/').pop()}`} 
                       alt={m.filename}
                       className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
                       loading="lazy"

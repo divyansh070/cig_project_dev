@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { API_URL } from "@/lib/api";
 import { Bell, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -11,7 +12,8 @@ export default function NotificationsClient() {
 
   useEffect(() => {
     // Connect to WebSocket
-    const ws = new WebSocket("ws://localhost:8000/notifications/ws");
+    const wsUrl = API_URL.replace("http://", "ws://").replace("https://", "wss://") + "/notifications/ws";
+        const ws = new WebSocket(wsUrl);
 
     ws.onmessage = (event) => {
       const message = event.data;
