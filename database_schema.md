@@ -1,6 +1,6 @@
 # Database Schema
 
-The database for this platform is a relational SQL database. We use SQLAlchemy as our Object-Relational Mapper (ORM) to interact with the database.
+The database for this platform is a relational SQL database. I use SQLAlchemy as my Object-Relational Mapper (ORM) to interact with the database.
 
 Below is the Entity-Relationship (ER) Diagram representing the core data models.
 
