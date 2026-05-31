@@ -33,9 +33,21 @@ if S3_ENABLED:
     except Exception as e:
         print(f"Failed to initialize Rekognition: {e}")
 
+def ensure_collection_exists():
+    if not rekognition_client:
+        return
+    try:
+        rekognition_client.create_collection(CollectionId=COLLECTION_ID)
+        print(f"Collection {COLLECTION_ID} created.")
+    except rekognition_client.exceptions.ResourceAlreadyExistsException:
+        pass
+    except Exception as e:
+        print(f"Error creating collection: {e}")
+
 def index_image_faces(media_id: int, image_bytes: bytes):
     if not rekognition_client:
         return
+    ensure_collection_exists()
     try:
         rekognition_client.index_faces(
             CollectionId=COLLECTION_ID,
@@ -58,6 +70,8 @@ async def search_faces(
     if not rekognition_client:
         raise HTTPException(status_code=500, detail="AWS Rekognition is not configured on the server")
         
+    ensure_collection_exists()
+        
     content = await file.read()
     
     try:
@@ -69,6 +83,8 @@ async def search_faces(
         )
     except rekognition_client.exceptions.InvalidParameterException:
         raise HTTPException(status_code=400, detail="No faces detected in the provided image.")
+    except rekognition_client.exceptions.ResourceNotFoundException:
+        raise HTTPException(status_code=404, detail="Facial recognition collection is empty or not found.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Rekognition Search Error: {str(e)}")
         

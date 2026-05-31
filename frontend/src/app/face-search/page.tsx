@@ -50,9 +50,9 @@ export default function FaceSearchPage() {
       });
       
       setResults(response.data);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to perform facial recognition search.");
+      alert(err.response?.data?.detail || "Failed to search for faces. Make sure the image contains a clear face.");
     } finally {
       setIsSearching(false);
     }
