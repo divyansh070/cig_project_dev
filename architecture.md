@@ -22,7 +22,7 @@ graph LR
         direction TB
         API{{FastAPI REST Gateway}}
         Auth(JWT & RBAC Engine)
-        WSS>WebSocket Manager]
+        WSS[WebSocket Manager]
         Workers[[Async Background Workers]]
         
         API <--> Auth
