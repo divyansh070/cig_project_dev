@@ -11,7 +11,7 @@ router = APIRouter(prefix="/face", tags=["face"])
 
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-AWS_REGION = os.environ.get("AWS_REGION", "eu-north-1")
+AWS_REGION_REKOGNITION = "us-east-1" # Rekognition is not available in eu-north-1
 COLLECTION_ID = "capturehub-faces"
 
 S3_ENABLED = bool(AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)
@@ -23,7 +23,7 @@ if S3_ENABLED:
             "rekognition",
             aws_access_key_id=AWS_ACCESS_KEY_ID,
             aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-            region_name=AWS_REGION
+            region_name=AWS_REGION_REKOGNITION
         )
         # Ensure collection exists on startup
         try:
