@@ -23,13 +23,15 @@ My platform is engineered to deliver a seamless experience across all touchpoint
 - **Live Notifications**: The platform integrates an active WebSocket connection, pushing instant, non-intrusive toast notifications to users whenever their uploaded media receives a Like or a Comment.
 - **Contextual Deep Linking**: Clicking on a live notification doesn't just take you to the event—it utilizes URL query parameters (`?photo=id`) to seamlessly deep-link the user directly into the specific media modal, drastically reducing friction.
 
-### Security, Authentication & Access Control
-- **Role-Based Access Control (RBAC)**: Comprehensive permission structures safeguard private event data.
-  - `Viewer`: Authorized to view public events and interact with media.
-  - `Photographer`: Authorized to upload new media to explicitly assigned events.
-  - `Admin`: Full organizational control over specific event roles and content moderation.
-  - `Superuser` (Developer): Global administrative bypass for platform-wide oversight.
-- **JWT Authentication**: Secure, stateless JSON Web Token architecture protecting all API endpoints.
+### Innovative Security Architecture
+To solve the common problem of unauthorized data access (IDOR vulnerabilities) and intellectual property theft, I implemented a robust, multi-layered security engine:
+- **Intelligent Role-Based Access Control (RBAC)**: Unlike basic Admin/User models, I engineered a highly granular 4-tier permission structure enforced strictly at the database level:
+  - `Viewer`: Authorized only to view public events and interact (Like/Comment).
+  - `Photographer`: Authorized to upload new media, but only to explicitly assigned events.
+  - `Admin`: Full organizational control over specific event roles, allowing event creators to moderate their own events.
+  - `Superuser` (Developer Mode): A secure, environment-variable-driven global backdoor allowing platform owners to oversee all content.
+- **Dynamic Asset Protection**: To protect the intellectual property of photographers, raw images cannot be downloaded by standard users. Instead, when a download is requested, my backend intercepts the request and uses the `Pillow` library to dynamically burn a semi-transparent watermark (containing the Event Name and the specific Photographer's Username) directly into the image on the fly.
+- **Stateless JWT Authentication**: All private routes are secured by JSON Web Tokens, ensuring session integrity without burdening server memory.
 
 ---
 
