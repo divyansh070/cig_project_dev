@@ -7,7 +7,7 @@ load_dotenv(override=True) # Force load variables from .env file overriding shel
 
 from database import engine
 import models
-from routers import auth, events, media, social, ai, notifications
+from routers import auth, events, media, social, ai, notifications, face
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -19,6 +19,7 @@ app.include_router(media.router)
 app.include_router(social.router)
 app.include_router(ai.router)
 app.include_router(notifications.router)
+app.include_router(face.router)
 
 # Configure CORS
 app.add_middleware(

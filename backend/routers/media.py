@@ -12,6 +12,7 @@ import io
 import models, schemas, auth
 from database import get_db, SessionLocal
 from routers.ai import generate_tags
+from routers.face import index_image_faces
 
 router = APIRouter(prefix="/media", tags=["media"])
 
@@ -107,7 +108,10 @@ async def upload_media(
     db.refresh(db_media)
     
     # Run AI Tagging in the background to free up the request thread instantly
-    async def run_tagging_in_background(media_id_val, user_val):
+    async def run_tagging_in_background(media_id_val, user_val, img_content):
+        # Index faces into AWS Rekognition first (fast API call)
+        index_image_faces(media_id_val, img_content)
+        
         db_session = SessionLocal()
         try:
             await generate_tags(media_id=media_id_val, db=db_session, current_user=user_val)
@@ -116,7 +120,7 @@ async def upload_media(
         finally:
             db_session.close()
 
-    background_tasks.add_task(run_tagging_in_background, db_media.id, current_user)
+    background_tasks.add_task(run_tagging_in_background, db_media.id, current_user, content)
         
     return db_media
 

@@ -13,6 +13,7 @@ interface Media {
   filename: string;
   url: string;
   upload_date: string;
+  event_id: number;
 }
 
 export default function FaceSearchPage() {
@@ -44,11 +45,11 @@ export default function FaceSearchPage() {
       const formData = new FormData();
       formData.append("file", file);
       
-      const response = await api.post("/ai/face-search", formData, {
+      const response = await api.post("/face/search", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       
-      setResults(response.data.matched_media);
+      setResults(response.data);
     } catch (err) {
       console.error(err);
       alert("Failed to perform facial recognition search.");
@@ -153,7 +154,7 @@ export default function FaceSearchPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                       <p className="text-sm font-medium truncate mb-1">{m.filename}</p>
                       <button 
-                        onClick={() => router.push(`/dashboard`)} // In a real app, this would link to the event
+                        onClick={() => router.push(`/event/${m.event_id}?photo=${m.id}`)}
                         className="text-xs bg-primary hover:bg-primary-hover text-white py-1.5 px-3 rounded-full transition-colors font-medium mt-2 w-fit"
                       >
                         Go to Event
