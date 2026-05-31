@@ -1,6 +1,6 @@
 # System Architecture
 
-The Capture Hub platform follows a modern, decoupled client-server architecture. The frontend is built with Next.js and React, while the backend is powered by FastAPI (Python). It leverages AWS for scalable cloud storage and facial recognition, alongside Google Gemini for generative AI image tagging.
+The Capture Hub platform follows a modern, decoupled client-server architecture designed for high scalability and performance, even within constrained environments. 
 
 ## High-Level Architecture Diagram
 
@@ -10,7 +10,7 @@ graph TD
     User([User / Photographer])
     
     %% Frontend Layer
-    subgraph "Frontend Layer (Vercel)"
+    subgraph "Frontend Layer (Deployed on Vercel)"
         NextJS[Next.js App Router]
         React[React Components]
         Tailwind[Tailwind CSS]
@@ -18,7 +18,7 @@ graph TD
     end
 
     %% Backend Layer
-    subgraph "Backend Layer (Render)"
+    subgraph "Backend Layer (Deployed on Render)"
         FastAPI[FastAPI Server]
         Auth[JWT Auth & RBAC]
         WebSockets[WebSocket Notifications]
@@ -27,25 +27,25 @@ graph TD
     end
 
     %% Cloud Services
-    subgraph "External Cloud Services"
+    subgraph "External Cloud Infrastructure"
         S3[(AWS S3 Bucket)]
         Rekognition[AWS Rekognition]
         Gemini[Google Gemini Pro Vision]
     end
 
     %% Database Layer
-    subgraph "Data Layer"
-        DB[(Relational Database)]
+    subgraph "Data Layer (Deployed on Supabase)"
+        DB[(PostgreSQL Database)]
     end
 
     %% Connections
-    User <-->|HTTP/HTTPS| NextJS
-    User <-->|WebSockets| WebSockets
+    User <-->|HTTPS| NextJS
+    User <-->|WSS| WebSockets
     NextJS <-->|REST API| FastAPI
     
     FastAPI <-->|SQLAlchemy ORM| DB
     
-    FastAPI -->|Upload/Download| S3
+    FastAPI -->|Direct Upload/Stream| S3
     FastAPI -->|Face Index/Search| Rekognition
     FastAPI -->|Image Analysis| Gemini
     
@@ -61,16 +61,17 @@ graph TD
     class S3,Rekognition,Gemini cloud;
 ```
 
-## Component Breakdown
+## Deployment & Scalability Architecture
 
-1. **Frontend (Client)**: 
-   - A highly responsive Single Page Application (SPA) built with Next.js.
-   - Communicates with the backend exclusively via REST API and WebSockets.
-2. **Backend (Server)**:
-   - A high-performance Python ASGI application using FastAPI.
-   - Implements Role-Based Access Control (RBAC) to differentiate between Viewers, Photographers, Admins, and Superusers.
-   - Dispatches heavy tasks (like AI tagging and facial indexing) to asynchronous background workers to prevent request blocking.
-3. **Cloud Infrastructure**:
-   - **AWS S3**: Scalable object storage for all uploaded media. Files are served directly from S3 via pre-signed URLs to reduce server load.
-   - **AWS Rekognition**: Used to index uploaded faces and perform facial search ("Find Myself" feature) without consuming server RAM.
-   - **Google Gemini**: Used to analyze image contents and automatically generate descriptive metadata tags for semantic search.
+1. **Frontend (Vercel)**: 
+   - A highly responsive SPA built with Next.js deployed on Vercel's Edge Network for global low-latency delivery.
+2. **Backend (Render)**:
+   - A high-performance Python ASGI application using FastAPI hosted on Render.
+   - **Scalability Feature**: Dispatches heavy ML tasks (like AI tagging and facial indexing) to asynchronous background workers. This strictly prevents the 512MB RAM container from crashing with OOM errors during concurrent heavy loads.
+3. **Database (Supabase)**:
+   - Fully managed PostgreSQL database hosted on Supabase, interacting with the backend via SQLAlchemy ORM.
+4. **Cloud Storage (AWS S3)**:
+   - Media is not streamed directly through the constrained Render server. Instead, FastAPI generates AWS S3 pre-signed URLs, allowing clients to stream high-res images directly from Amazon's infrastructure.
+5. **AI Inference Offloading**:
+   - **Facial Recognition**: AWS Rekognition performs massive facial feature matrices comparisons in the cloud, bypassing local memory limits.
+   - **Semantic Tagging**: Google Gemini Pro Vision handles complex image understanding and natural language generation for search tags.
