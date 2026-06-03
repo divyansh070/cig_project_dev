@@ -13,8 +13,9 @@ export default function Home() {
           animate={{ opacity: 1, x: 0 }}
           className="flex items-center gap-3"
         >
-          <div className="bg-gradient-to-tr from-primary to-blue-400 p-2 rounded-xl shadow-[0_4px_20px_rgba(59,130,246,0.3)]">
-            <Camera className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 overflow-hidden flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="Capture Hub Logo" className="w-full h-full object-contain drop-shadow-sm" />
           </div>
           <span className="text-2xl font-black tracking-tighter text-gray-900">
             CaptureHub
