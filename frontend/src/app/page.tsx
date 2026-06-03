@@ -13,10 +13,13 @@ export default function Home() {
           animate={{ opacity: 1, x: 0 }}
           className="flex items-center gap-3"
         >
-          <div className="h-10 flex items-center justify-center">
+          <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-white shadow-sm border border-gray-100 overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/final_logo.png" alt="Capture Hub Logo" className="h-full w-auto object-contain drop-shadow-sm scale-150 origin-left" />
+            <img src="/final_logo.png" alt="Capture Hub Logo" className="w-full h-full object-cover scale-150" />
           </div>
+          <span className="text-2xl font-black tracking-tighter text-gray-900">
+            CaptureHub
+          </span>
         </motion.div>
 
         <motion.div
