@@ -8,21 +8,21 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden">
       <nav className="p-6 flex justify-between items-center max-w-7xl mx-auto w-full relative z-10">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           className="flex items-center gap-3"
         >
           <div className="w-10 h-10 overflow-hidden flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Capture Hub Logo" className="w-full h-full object-contain drop-shadow-sm" />
+            <img src="/final_logo.png" alt="Capture Hub Logo" className="w-full h-full object-contain drop-shadow-sm" />
           </div>
           <span className="text-2xl font-black tracking-tighter text-gray-900">
             CaptureHub
           </span>
         </motion.div>
-        
-        <motion.div 
+
+        <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           className="flex items-center gap-6"
@@ -51,15 +51,15 @@ export default function Home() {
             <Sparkles className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium text-gray-700">The new standard for event photography</span>
           </div>
-          
+
           <h1 className="text-6xl md:text-8xl font-black tracking-tight mb-8 leading-[1.1] text-gray-900">
             Curate your moments with <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-blue-500 to-purple-500">Intelligent</span> vision.
           </h1>
-          
+
           <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed font-light">
             An exclusive platform for modern photography clubs. Featuring AI-powered facial recognition, dynamic watermarks, and granular privacy controls.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link href="/register" className="px-8 py-4 bg-primary text-white rounded-full font-semibold text-lg transition-all shadow-[0_8px_30px_rgba(59,130,246,0.3)] hover:shadow-[0_8px_40px_rgba(59,130,246,0.4)] hover:-translate-y-1 flex items-center gap-2 w-full sm:w-auto justify-center">
               Create an Account
@@ -70,27 +70,27 @@ export default function Home() {
           </div>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
           className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full mt-32 mb-12"
         >
           {[
-            { 
-              icon: Aperture, 
-              title: "Contextual Roles", 
-              desc: "Granular, event-specific roles. Be an Admin for one shoot and a Viewer for another." 
+            {
+              icon: Aperture,
+              title: "Contextual Roles",
+              desc: "Granular, event-specific roles. Be an Admin for one shoot and a Viewer for another."
             },
-            { 
-              icon: Users, 
-              title: "Social Ecosystem", 
-              desc: "Foster community with built-in discussions, likes, and seamless sharing capabilities." 
+            {
+              icon: Users,
+              title: "Social Ecosystem",
+              desc: "Foster community with built-in discussions, likes, and seamless sharing capabilities."
             },
-            { 
-              icon: Shield, 
-              title: "Enterprise Privacy", 
-              desc: "Military-grade access controls ensuring private events remain completely invisible to the public." 
+            {
+              icon: Shield,
+              title: "Enterprise Privacy",
+              desc: "Military-grade access controls ensuring private events remain completely invisible to the public."
             }
           ].map((feature, i) => (
             <div key={i} className="group relative glass-panel p-8 rounded-3xl text-left border border-black/5 hover:border-primary/20 transition-all duration-500 overflow-hidden">
