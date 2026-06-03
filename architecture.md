@@ -5,7 +5,7 @@ The Capture Hub platform follows a modern, decoupled client-server architecture 
 ## High-Level Architecture Diagram
 
 ```mermaid
-graph LB
+graph LR
     %% Actors
     Client([👤 Client Device / Browser])
 
