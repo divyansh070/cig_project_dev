@@ -16,7 +16,7 @@ My platform is engineered to deliver a seamless experience across all touchpoint
 - **Granular Gallery Filtering**: Effortless exploration of event galleries, utilizing metadata and AI-generated tags for rapid media discovery.
 
 ### Artificial Intelligence & Machine Learning (AI/ML)
-- **Facial Recognition Engine ("Find Myself")**: Finding photos in a massive event gallery can be tedious. Users can upload a quick selfie, and my backend utilizes **AWS Rekognition** to instantly scan thousands of indexed faces, returning every single photograph they appear in.
+- **Facial Recognition Engine ("Find Myself")**: Finding photos in a massive event gallery can be tedious. Users can upload a quick selfie, and my backend utilizes **AWS Rekognition** to instantly scan thousands of indexed faces, returning every single photograph they appear in. *(Note: AWS Rekognition currently strictly enforces JPEG/PNG formats for inference. WebP assets are explicitly filtered or require preprocessing conversion prior to indexing).*
 - **Automated Semantic Tagging**: Every uploaded photograph is asynchronously processed by **Google Gemini Pro Vision**, which generates rich, descriptive metadata tags (e.g., "outdoor, sunset, wedding, bride"). This eliminates manual data entry and supercharges the search experience.
 
 ### Real-Time Social Engagement
