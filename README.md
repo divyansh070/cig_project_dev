@@ -11,13 +11,13 @@ Capture Hub is an enterprise-grade, highly scalable Event & Media Management Pla
 My platform is engineered to deliver a seamless experience across all touchpoints, from media ingestion to user discovery.
 
 ### Advanced Media Management
-- **High-Fidelity Image Hosting**: Supports batch uploading of high-resolution images across diverse formats (JPG, PNG, WebP). 
+- **High-Fidelity Media Hosting**: Supports batch uploading of high-resolution images (JPG, PNG, WebP) and videos (MP4, MOV, WebM).
 - **Dynamic Asset Protection**: To protect intellectual property, all user downloads are routed through a dynamic watermarking engine. The backend seamlessly burns a semi-transparent watermark containing the specific Event Name and the Photographer's Username directly into the image upon request.
 - **Granular Gallery Filtering**: Effortless exploration of event galleries, utilizing metadata and AI-generated tags for rapid media discovery.
 
 ### Artificial Intelligence & Machine Learning (AI/ML)
 - **Facial Recognition Engine ("Find Myself")**: Finding photos in a massive event gallery can be tedious. Users can upload a quick selfie, and my backend utilizes **AWS Rekognition** to instantly scan thousands of indexed faces, returning every single photograph they appear in. *(Note: AWS Rekognition currently strictly enforces JPEG/PNG formats for inference. WebP assets are explicitly filtered or require preprocessing conversion prior to indexing).*
-- **Automated Semantic Tagging**: Every uploaded photograph is asynchronously processed by **Google Gemini Pro Vision**, which generates rich, descriptive metadata tags (e.g., "outdoor, sunset, wedding, bride"). This eliminates manual data entry and supercharges the search experience.
+- **Automated Semantic Tagging**: Every uploaded photograph is asynchronously processed by **Google Gemini Pro Vision**, which generates rich, descriptive metadata tags (e.g., "outdoor, sunset, wedding, bride"). Videos are intelligently detected and bypass the AI engine to prevent processing errors, receiving a default "video" tag instead. This supercharges the search experience while maintaining pipeline stability.
 
 ### Real-Time Social Engagement
 - **Live Notifications**: The platform integrates an active WebSocket connection, pushing instant, non-intrusive toast notifications to users whenever their uploaded media receives a Like or a Comment.
@@ -30,7 +30,7 @@ To solve the common problem of unauthorized data access (IDOR vulnerabilities) a
   - `Photographer`: Authorized to upload new media, but only to explicitly assigned events.
   - `Admin`: Full organizational control over specific event roles, allowing event creators to moderate their own events.
   - `Superuser` (Developer Mode): A secure, environment-variable-driven global backdoor allowing platform owners to oversee all content.
-- **Dynamic Asset Protection**: To protect the intellectual property of photographers, raw images cannot be downloaded by standard users. Instead, when a download is requested, my backend intercepts the request and uses the `Pillow` library to dynamically burn a semi-transparent watermark (containing the Event Name and the specific Photographer's Username) directly into the image on the fly.
+- **Dynamic Asset Protection**: To protect the intellectual property of photographers, raw images cannot be downloaded by standard users. Instead, when an image download is requested, my backend intercepts the request and uses the `Pillow` library to dynamically burn a semi-transparent watermark (containing the Event Name and the specific Photographer's Username) directly into the image on the fly. Video downloads safely bypass this image engine and are streamed securely.
 - **Stateless JWT Authentication**: All private routes are secured by JSON Web Tokens, ensuring session integrity without burdening server memory.
 
 ---
