@@ -263,7 +263,7 @@ function EventGalleryContent() {
               >
                 {isVideo(m.filename) ? (
                   <video 
-                    src={`${API_URL}/media/view/${m.url.split('/').pop()}`} 
+                    src={`${API_URL}/media/view/${m.url.split('/').pop()}#t=0.1`} 
                     className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105 min-h-[150px] bg-gray-100"
                     controls
                     preload="metadata"
@@ -347,6 +347,18 @@ function EventGalleryContent() {
                       onClick={async (e) => {
                         e.preventDefault();
                         const filename = m.url.split('/').pop();
+                        
+                        // Direct download bypass for videos to prevent CORS redirect errors
+                        if (isVideo(m.filename)) {
+                          const link = document.createElement('a');
+                          link.href = `${API_URL}/media/view/${filename}?download=true`;
+                          link.download = m.filename;
+                          document.body.appendChild(link);
+                          link.click();
+                          link.remove();
+                          return;
+                        }
+
                         try {
                           const response = await api.get(`/media/download/${filename}`, {
                             responseType: 'blob'

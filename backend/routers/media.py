@@ -152,17 +152,21 @@ def get_event_media(
     return media
 
 @router.get("/view/{filename}")
-def view_media(filename: str):
+def view_media(filename: str, download: bool = False):
     # Path Traversal Prevention
     filename = os.path.basename(filename)
     file_path = os.path.join(UPLOAD_DIR, filename)
     
     if S3_ENABLED:
         try:
+            params = {'Bucket': AWS_BUCKET_NAME, 'Key': filename}
+            if download:
+                params['ResponseContentDisposition'] = f'attachment; filename="{filename}"'
+                
             # Huge Scalability Win: Direct user to AWS instead of streaming through our tiny 512MB server
             url = s3_client.generate_presigned_url(
                 'get_object',
-                Params={'Bucket': AWS_BUCKET_NAME, 'Key': filename},
+                Params=params,
                 ExpiresIn=3600 # URL valid for 1 hour
             )
             return RedirectResponse(url=url)
@@ -171,6 +175,8 @@ def view_media(filename: str):
             
     # Local File Fallback
     if os.path.exists(file_path):
+        if download:
+            return FileResponse(file_path, filename=filename)
         return FileResponse(file_path)
     
     raise HTTPException(status_code=404, detail="File not found")
