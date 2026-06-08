@@ -66,10 +66,10 @@ async def upload_media(
         raise HTTPException(status_code=403, detail="You do not have permission to upload photos to this event.")
         
     # Strict File Validation
-    ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+    ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".mp4", ".mov", ".webm"}
     file_extension = os.path.splitext(file.filename)[1].lower()
     if file_extension not in ALLOWED_EXTENSIONS:
-        raise HTTPException(status_code=400, detail="Invalid file type. Only JPG, PNG, and WebP are allowed.")
+        raise HTTPException(status_code=400, detail="Invalid file type. Only JPG, PNG, WebP, and videos (MP4, MOV, WebM) are allowed.")
         
     unique_filename = f"{uuid.uuid4()}{file_extension}"
     file_path = os.path.join(UPLOAD_DIR, unique_filename)
@@ -97,30 +97,34 @@ async def upload_media(
 
     url = f"/media/view/{unique_filename}"
 
+    is_video = file_extension in {".mp4", ".mov", ".webm"}
+
     db_media = models.Media(
         filename=file.filename,
         url=url,
         event_id=event_id,
-        uploader_id=current_user.id
+        uploader_id=current_user.id,
+        tags='["video"]' if is_video else None
     )
     db.add(db_media)
     db.commit()
     db.refresh(db_media)
     
-    # Run AI Tagging in the background to free up the request thread instantly
-    async def run_tagging_in_background(media_id_val, user_val, img_content):
-        # Index faces into AWS Rekognition first (fast API call)
-        index_image_faces(media_id_val, img_content)
-        
-        db_session = SessionLocal()
-        try:
-            await generate_tags(media_id=media_id_val, db=db_session, current_user=user_val)
-        except Exception as e:
-            print(f"Failed to queue background tagging: {e}")
-        finally:
-            db_session.close()
+    if not is_video:
+        # Run AI Tagging in the background to free up the request thread instantly
+        async def run_tagging_in_background(media_id_val, user_val, img_content):
+            # Index faces into AWS Rekognition first (fast API call)
+            index_image_faces(media_id_val, img_content)
+            
+            db_session = SessionLocal()
+            try:
+                await generate_tags(media_id=media_id_val, db=db_session, current_user=user_val)
+            except Exception as e:
+                print(f"Failed to queue background tagging: {e}")
+            finally:
+                db_session.close()
 
-    background_tasks.add_task(run_tagging_in_background, db_media.id, current_user, content)
+        background_tasks.add_task(run_tagging_in_background, db_media.id, current_user, content)
         
     return db_media
 
@@ -180,6 +184,29 @@ def download_media(
     # Path Traversal Prevention
     filename = os.path.basename(filename)
     file_path = os.path.join(UPLOAD_DIR, filename)
+    
+    file_extension = os.path.splitext(filename)[1].lower()
+    is_video = file_extension in {".mp4", ".mov", ".webm"}
+    
+    if is_video:
+        if S3_ENABLED:
+            try:
+                url = s3_client.generate_presigned_url(
+                    'get_object',
+                    Params={
+                        'Bucket': AWS_BUCKET_NAME, 
+                        'Key': filename,
+                        'ResponseContentDisposition': f'attachment; filename="{filename}"'
+                    },
+                    ExpiresIn=3600
+                )
+                return RedirectResponse(url=url)
+            except Exception:
+                pass
+        
+        if os.path.exists(file_path):
+            return FileResponse(file_path, filename=filename)
+        raise HTTPException(status_code=404, detail="File not found")
     
     # Check if media exists in DB to get Event info for watermarking
     media_record = db.query(models.Media).filter(models.Media.url.contains(filename)).first()

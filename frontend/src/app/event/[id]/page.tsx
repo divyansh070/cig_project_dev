@@ -23,6 +23,11 @@ interface Media {
   uploader_id: number;
 }
 
+const isVideo = (filename: string) => {
+  const ext = filename.split('.').pop()?.toLowerCase();
+  return ext === 'mp4' || ext === 'mov' || ext === 'webm';
+};
+
 function EventGalleryContent() {
   const params = useParams();
   const router = useRouter();
@@ -256,16 +261,25 @@ function EventGalleryContent() {
                 layout
                 className="relative group rounded-xl overflow-hidden bg-white border border-gray-100 mb-4 inline-block w-full shadow-sm break-inside-avoid"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
-                  src={`${API_URL}/media/view/${m.url.split('/').pop()}`} 
-                  alt={m.filename}
-                  onError={(e) => {
-                    e.currentTarget.src = "https://placehold.co/400x300/f3f4f6/9ca3af?text=Image+Deleted";
-                  }}
-                  className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105 min-h-[150px] bg-gray-100"
-                  loading="lazy"
-                />
+                {isVideo(m.filename) ? (
+                  <video 
+                    src={`${API_URL}/media/view/${m.url.split('/').pop()}`} 
+                    className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105 min-h-[150px] bg-gray-100"
+                    controls
+                    preload="metadata"
+                  />
+                ) : (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img 
+                    src={`${API_URL}/media/view/${m.url.split('/').pop()}`} 
+                    alt={m.filename}
+                    onError={(e) => {
+                      e.currentTarget.src = "https://placehold.co/400x300/f3f4f6/9ca3af?text=Image+Deleted";
+                    }}
+                    className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105 min-h-[150px] bg-gray-100"
+                    loading="lazy"
+                  />
+                )}
                 
                 {/* Delete Button (Top Right) */}
                 {(currentUserId === m.uploader_id || eventRole === "Admin") && (
@@ -371,12 +385,21 @@ function EventGalleryContent() {
             className="glass-panel rounded-2xl w-full max-w-4xl flex flex-col md:flex-row overflow-hidden max-h-[90vh] bg-white shadow-2xl border border-gray-200"
           >
             <div className="w-full md:w-2/3 bg-gray-100 flex items-center justify-center p-4 border-r border-gray-200">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                src={`${API_URL}/media/view/${selectedMedia.url.split('/').pop()}`} 
-                alt="Selected"
-                className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-sm"
-              />
+              {isVideo(selectedMedia.filename) ? (
+                <video 
+                  src={`${API_URL}/media/view/${selectedMedia.url.split('/').pop()}`} 
+                  controls
+                  autoPlay
+                  className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-sm"
+                />
+              ) : (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img 
+                  src={`${API_URL}/media/view/${selectedMedia.url.split('/').pop()}`} 
+                  alt="Selected"
+                  className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-sm"
+                />
+              )}
             </div>
             <div className="w-full md:w-1/3 p-6 flex flex-col bg-white">
               <div className="flex justify-between items-center mb-6">
